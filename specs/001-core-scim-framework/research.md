@@ -842,4 +842,562 @@ Provider (Salesforce)              SCIMGateway                        Entra ID
 
 ---
 
-**Version**: 1.0.0 | **Date**: 2025-11-22 | **Status**: Ready for Phase 1 Design
+## Part 8: Stack Decision - Azure Functions vs App Service (R9)
+
+### Executive Summary
+
+**DECISION**: Use **Azure App Service (Standard S1)** for SCIM Gateway hosting.
+
+**Rationale**: Cost efficiency ($70/month vs $205/month), standard ASP.NET Core patterns, predictable performance, and easier long-term maintenance outweigh Azure Functions' superior burst scaling. Both platforms meet FR-046 latency requirements (<500ms SDK operations).
+
+---
+
+### Architecture Comparison
+
+#### Azure Functions
+
+**Hosting Plans**:
+1. **Consumption Plan** (Pay-per-execution)
+   - Automatic scaling: 0-200 instances
+   - Cold start: 1-3 seconds (.NET 8 isolated)
+   - Pricing: $0.20/million executions + $0.000016/GB-s
+   - Timeout: 5-10 minutes max
+   - ❌ **Violates FR-046** (<500ms SDK internal requirement due to cold starts)
+   - **Note**: RFC 7644 does not specify response time requirements. FR-046's <2s end-to-end target is an architectural decision based on user experience expectations, not an RFC mandate.
+
+2. **Premium Plan** (Pre-warmed instances)
+   - Always-on: 1+ pre-warmed instances
+   - Cold start: <200ms (pre-warmed eliminates cold starts)
+   - Pricing: $150-300/month base + execution costs
+   - Timeout: 30 minutes default, unlimited possible
+   - VNet integration included
+   - ✅ **Meets FR-046** (<500ms SDK latency)
+
+3. **Dedicated Plan** (App Service infrastructure)
+   - Runs on App Service Plan
+   - No cold starts (always-on)
+   - Pricing: Same as App Service
+   - Essentially App Service with Functions runtime
+
+**Scaling Behavior**:
+- Scale-out speed: **10-30 seconds** per new instance
+- Max instances: 200 (Consumption), 100 (Premium)
+- Scale trigger: HTTP requests/second, custom metrics
+- Scale-in: Gradual after 5 minutes idle
+- ✅ **Excellent for burst traffic**
+
+---
+
+#### App Service
+
+**Service Plans**:
+1. **Basic Tier (B1-B3)**
+   - Pricing: $13-52/month
+   - Always-on: Yes (manual enable)
+   - Scaling: Manual only (1-3 instances)
+   - ❌ **No auto-scaling**
+
+2. **Standard Tier (S1-S3)**
+   - Pricing: $70-280/month
+   - Always-on: Yes
+   - Scaling: Auto-scale up to 10 instances
+   - Deployment slots: 5
+   - ✅ **Recommended tier for SCIM**
+
+3. **Premium Tier (P1v3-P3v3)**
+   - Pricing: $200-800/month
+   - Auto-scale: Up to 30 instances
+   - VNet integration, private endpoints
+   - Deployment slots: 20
+
+**Scaling Behavior**:
+- Scale-out speed: **1-2 minutes** per new instance
+- Max instances: 10 (Standard), 30 (Premium)
+- Scale trigger: CPU %, Memory %, HTTP queue length
+- Scale-in: Based on scale rules (5-10 min idle)
+- ⚠️ **Slower than Functions** but adequate for SCIM workload
+
+---
+
+### Cost Analysis
+
+**Workload Assumptions** (typical SCIM deployment):
+- 10 tenants
+- 1000 users per tenant
+- Sync every 30 minutes during 8 working hours
+- 2000 requests per sync (GET + PATCH per user)
+- Total: **9.6M requests/month** (320K/day × 30 days)
+- Average execution time: 100ms/request
+
+#### Azure Functions Premium (EP1):
+```
+Base cost (1 always-on instance):  $150.00/month
+Execution cost (9.6M × $0.20/1M):    $1.92/month
+Compute cost (9.6M × 0.1s × 3.5GB):  $53.76/month
+─────────────────────────────────────────────────
+Total:                              ~$205/month
+```
+
+#### App Service Standard S1:
+```
+Base cost:                           $70.00/month
+Scale-out (during peak, +1 instance): $0-70/month (only when scaled)
+─────────────────────────────────────────────────
+Total:                              ~$70-140/month
+Average:                            ~$105/month (assuming 50% scale-out time)
+```
+
+**Cost Winner**: **App Service** (48% cheaper baseline, comparable with scale-out)
+
+---
+
+### Cold Start Impact vs FR-046 Requirements
+
+**FR-046**: SDK internal processing <500ms (MUST), end-to-end <2s (SHOULD)
+
+**Important**: RFC 7644 does not specify response time or timeout requirements. The FR-046 performance targets are architectural decisions based on:
+- General user experience expectations (2s is a common threshold for acceptable web response times)
+- Industry best practices for SCIM implementations
+- Real-world deployment experience
+
+The <2s end-to-end target is **provider-dependent and best-effort**, acknowledging that SaaS provider API latency varies.
+
+#### Azure Functions Cold Start Latency:
+
+**Consumption Plan**:
+- Cold start time: **1-3 seconds**
+  - Runtime initialization: 800ms-1.5s
+  - Dependency loading (Cosmos SDK, Key Vault): 500ms-1s
+  - First request processing: 200-500ms
+- Cold start triggers:
+  - No requests for 20 minutes (idle timeout)
+  - Scale-out to new instance
+  - Function app restart/deployment
+- ❌ **FAILS FR-046**: 1-3 second cold start exceeds <500ms SDK internal requirement
+- **Note**: This violates our architectural performance target, not an RFC 7644 requirement
+
+**Premium Plan**:
+- Cold start time: **<200ms** (pre-warmed instances)
+- Always 1+ instances warm and ready
+- Scale-out: New instances pre-warm during scale (~30s)
+- ✅ **PASSES FR-046**: <200ms latency, no unpredictable spikes
+
+#### App Service:
+- Cold start time: **None** (always-on enabled)
+- First request after deployment: ~200ms (JIT compilation)
+- Consistent latency: **10-50ms** per request
+- ✅ **PASSES FR-046**: Always <500ms, predictable performance
+
+**Latency Winner**: **Tie** (both Premium Functions & App Service meet requirements)
+
+---
+
+### Scaling Pattern Analysis
+
+**SCIM Traffic Pattern**: Predictable burst traffic during scheduled sync windows.
+
+**Example Burst**:
+- 10 tenants sync simultaneously at 9:00 AM
+- 20,000 requests in 5 minutes (4000 req/min)
+- Baseline: 100 req/min during idle periods
+
+#### Azure Functions Premium:
+- Pre-warmed instances handle baseline load (100 req/min)
+- Scale-out trigger: HTTP queue length, custom metrics
+- Scale-out speed: **<30 seconds** (pre-warmed instances)
+- Max instances: 100 (EP1 plan)
+- Scale-in: Gradual after load decreases (5 min idle)
+- ✅ **Excellent for burst traffic**: Rapid scale-out without cold starts
+
+#### App Service Standard:
+- Always-on instance handles baseline load
+- Scale-out trigger: CPU %, Memory %, HTTP queue length
+- Scale-out speed: **1-2 minutes** per new instance
+- Max instances: 10 (Standard S1)
+- Scale-in: Based on scale rules (typically 5-10 min)
+- ⚠️ **Good for burst traffic**: Slower scale-out but adequate for SCIM workload
+
+**Scaling Winner**: **Azure Functions** (3-4× faster scale-out)
+
+**Reality Check**: SCIM sync windows are typically **predictable** (scheduled every 30 min). Scheduled scale-out rules in App Service can pre-scale before known burst windows, eliminating the 1-2 minute scale-out delay.
+
+---
+
+### Developer Experience
+
+#### Local Development:
+
+**Azure Functions**:
+- ✅ Azure Functions Core Tools (CLI)
+- ✅ VS Code extension with F5 debugging
+- ✅ Local emulator (Azurite for storage bindings)
+- ✅ Hot reload in development mode
+- ⚠️ Local environment differs from cloud (Functions runtime vs App Service)
+- ⚠️ Requires understanding Functions-specific concepts (triggers, bindings, host.json)
+
+**App Service**:
+- ✅ Standard ASP.NET Core development (Program.cs, Controllers)
+- ✅ VS Code debugging (standard .NET)
+- ✅ Kestrel local server (identical to cloud)
+- ✅ Hot reload (.NET 8 built-in)
+- ✅ **Identical local/cloud behavior** (same runtime, same code paths)
+- ✅ No additional tooling beyond .NET SDK
+
+#### Testing:
+
+**Azure Functions**:
+- ⚠️ HTTP trigger testing requires Functions host emulator
+- ✅ Function code testable as standard methods (dependency injection works)
+- ⚠️ Integration tests need Functions runtime or mocking
+- ⚠️ Functions-specific testing patterns (ILogger<T> vs standard logging)
+
+**App Service**:
+- ✅ **Standard ASP.NET Core testing** (TestServer, WebApplicationFactory)
+- ✅ Integration tests straightforward (in-memory server)
+- ✅ No special emulator or runtime needed
+- ✅ Industry-standard testing patterns (xUnit, NUnit, etc.)
+
+#### Deployment:
+
+**Azure Functions**:
+- ✅ VS Code extension (1-click deploy)
+- ✅ Azure CLI (`func azure functionapp publish`)
+- ✅ GitHub Actions templates available
+- ✅ Deployment slots (Premium plan only)
+- ⚠️ Function app configuration complexity (host.json, function.json per function)
+
+**App Service**:
+- ✅ VS Code extension (1-click deploy)
+- ✅ Azure CLI (`az webapp up`)
+- ✅ GitHub Actions templates available
+- ✅ Deployment slots (Standard+ tier)
+- ✅ Blue-green deployments built-in
+- ✅ Simpler configuration (single appsettings.json)
+
+#### Monitoring:
+
+**Azure Functions**:
+- ✅ **Application Insights deep integration** (automatic)
+- ✅ **Per-function metrics** (invocations, duration, errors, success rate)
+- ✅ Distributed tracing automatic (dependency tracking)
+- ✅ Live Metrics Stream
+- ✅ Function-level logs in Azure Portal
+- ✅ **Best-in-class observability**
+
+**App Service**:
+- ✅ Application Insights integration (requires manual setup)
+- ✅ HTTP request metrics (per-endpoint)
+- ✅ Distributed tracing (requires configuration)
+- ✅ Live Metrics Stream
+- ⚠️ Less granular than Functions (no automatic per-endpoint breakdown)
+
+**Developer Experience Winner**: **App Service** (standard .NET patterns, easier testing, simpler local development)
+
+---
+
+### Decision Matrix
+
+| Criteria | Azure Functions (Premium EP1) | App Service (Standard S1) | Winner |
+|----------|------------------------------|---------------------------|--------|
+| **Cost (baseline)** | $205/month | $70/month | **App Service** (66% cheaper) |
+| **Cost (with scale-out)** | $205/month + scale | $105/month avg | **App Service** (49% cheaper) |
+| **Cold Start** | <200ms (pre-warmed) | None (always-on) | **Tie** (both excellent) |
+| **FR-046 Compliance** | ✅ <500ms | ✅ <500ms | **Tie** |
+| **Scale-out Speed** | <30 seconds | 1-2 minutes | **Functions** |
+| **Burst Traffic Handling** | Excellent (rapid scale) | Good (predictable schedule) | **Functions** |
+| **Max Scale Instances** | 100 instances | 10 instances | **Functions** |
+| **Developer Experience** | Good (Functions-specific) | Excellent (standard .NET) | **App Service** |
+| **Testing Complexity** | Medium (Functions host) | Low (standard ASP.NET) | **App Service** |
+| **Local Development** | Good (emulator) | Excellent (Kestrel) | **App Service** |
+| **Monitoring Granularity** | Excellent (per-function) | Good (per-endpoint) | **Functions** |
+| **Deployment Slots** | ✅ (Premium) | ✅ (Standard+) | **Tie** |
+| **VNet Integration** | ✅ (Premium) | ✅ (Standard+) | **Tie** |
+| **Long-term Maintenance** | Functions-specific patterns | Standard .NET patterns | **App Service** |
+| **Team Onboarding** | Requires Functions training | Standard ASP.NET Core | **App Service** |
+| **Migration Flexibility** | Functions-specific | Standard HTTP hosting | **App Service** |
+
+**Score**: App Service **10** | Functions **6** | Tie **5**
+
+---
+
+### Recommendation: Azure App Service (Standard S1)
+
+**Primary Reasons**:
+
+1. **Cost Efficiency** (66% cheaper baseline)
+   - $70/month vs $205/month for comparable performance
+   - SCIM workload is predictable; burst scaling less critical
+   - Auto-scaling handles traffic spikes adequately (1-2 min scale-out acceptable)
+
+2. **FR-046 Compliance**
+   - Always-on eliminates cold starts entirely
+   - Consistent <500ms SDK latency
+   - Predictable, reliable performance
+
+3. **Developer Experience**
+   - Standard ASP.NET Core patterns (Controllers, Middleware, DI)
+   - Easier onboarding for .NET developers
+   - Standard testing frameworks (WebApplicationFactory, TestServer)
+   - No Functions-specific concepts to learn
+
+4. **Simplicity**
+   - Single appsettings.json configuration
+   - Standard HTTP hosting model
+   - Easier to reason about performance and scaling
+   - No pre-warming or Functions runtime complexity
+
+5. **Long-term Maintenance**
+   - ASP.NET Core is industry-standard, well-documented
+   - Larger talent pool (easier to hire developers)
+   - Migration path to other hosting (AKS, on-premises) simpler
+   - Future-proof architecture
+
+6. **SCIM Workload Characteristics Favor App Service**
+   - Predictable traffic patterns (scheduled syncs)
+   - Not event-driven (no queues, no triggers)
+   - HTTP-only workload (no messaging, no timers)
+   - 1-2 minute scale-out acceptable for scheduled bursts
+
+---
+
+### When Azure Functions Would Be Better
+
+Azure Functions Premium would be the better choice if:
+
+1. **Extreme Burst Traffic**: 100+ tenants syncing simultaneously, requiring <30s scale-out
+2. **Event-Driven Patterns**: Future requirements include queue-based processing, timers, or non-HTTP triggers
+3. **Serverless Cost Model**: Traffic is very sporadic (e.g., only 2-3 hours/day), not SCIM's continuous pattern
+4. **Multi-Protocol Workload**: Combining HTTP endpoints with queue processing, timers, or event-driven functions
+5. **Per-Function Isolation**: Need to isolate tenant workloads at function-level (not required for SCIM)
+
+**Reality**: SCIM Gateway is HTTP-only, predictable traffic, standard CRUD operations → **App Service is ideal fit**.
+
+---
+
+### Implementation Plan
+
+**Phase 1: Initialize with App Service Standard S1**
+- Configure always-on for zero cold starts
+- Enable Application Insights for monitoring
+- Configure auto-scaling rules:
+  - Scale-out: HTTP queue length >100 OR CPU >70%
+  - Scale-in: HTTP queue length <20 AND CPU <40% for 10 min
+  - Schedule-based: Pre-scale at 8:55 AM (before 9 AM sync window)
+- Enable deployment slots (blue-green deployments)
+
+**Phase 2: Monitor and Optimize**
+- Track latency metrics (target: 95th percentile <200ms)
+- Monitor scale-out behavior during burst windows
+- Analyze cost vs performance tradeoffs
+
+**Phase 3: Upgrade Path (if needed)**
+- If scale-out speed becomes bottleneck (>10 tenants with simultaneous syncs):
+  - Upgrade to Premium App Service (P1v3) for 30 max instances
+  - OR migrate to Azure Functions Premium for <30s scale-out
+- Migration path: Same ASP.NET Core code, minimal changes required
+
+---
+
+### Final Decision
+
+**Use Azure App Service (Standard S1)** for initial SCIM Gateway implementation.
+
+**Justification**: Cost efficiency, standard .NET patterns, predictable performance, and ease of development/maintenance align with SCIM Gateway requirements. Azure Functions' superior burst scaling is not worth the 3× cost premium and increased complexity for SCIM's predictable workload pattern.
+
+**Upgrade Trigger**: If production monitoring shows scale-out delays causing latency spikes (>500ms) during burst windows, migrate to Functions Premium or upgrade to App Service Premium tier.
+
+---
+
+## Part 9: Consumption Plan Reconsidered (Relaxed FR-046)
+
+### Context
+
+This analysis reconsiders **Azure Functions Consumption Plan** assuming FR-046's <500ms SDK requirement is relaxed to accommodate cold starts. The question: **Is Consumption Plan cheaper than App Service S1 when cold starts are acceptable?**
+
+### Updated FR-046 Assumption
+
+**Relaxed Requirement**:
+- SDK internal processing: <3s p95 (allows for 1-3s cold starts)
+- End-to-end: <5s p95 (allows for cold start + provider latency)
+- **Tradeoff**: Accept occasional 1-3s first-request latency for potential cost savings
+
+**Impact**:
+- Entra ID sync clients: Can tolerate higher latency (batch operations, not real-time)
+- User experience: Admins configuring sync see occasional delays, but not user-facing
+
+### Cost Analysis: Consumption vs App Service
+
+#### Scenario 1: Original Traffic Estimate (9.6M requests/month)
+
+**Azure Functions Consumption Plan**:
+```
+Execution cost: 9.6M requests × $0.20/1M        = $1.92/month
+Compute cost: 9.6M × 0.1s × 1GB × $0.000016/GB-s = $15.36/month
+─────────────────────────────────────────────────────────────────
+Total:                                           = $17.28/month
+```
+
+**App Service Standard S1** (baseline):
+```
+Base cost:                                       = $70.00/month
+```
+
+**Winner**: **Consumption Plan** ($17.28 vs $70.00 = **75% cheaper**)
+
+---
+
+#### Scenario 2: Realistic Traffic Estimate (460K requests/month)
+
+Using the 95% reduction model from earlier analysis (change-detection reduces sync frequency):
+
+**Azure Functions Consumption Plan**:
+```
+Execution cost: 460K requests × $0.20/1M         = $0.09/month
+Compute cost: 460K × 0.1s × 1GB × $0.000016/GB-s = $0.74/month
+─────────────────────────────────────────────────────────────────
+Total:                                           = $0.83/month
+```
+
+**App Service Standard S1** (baseline):
+```
+Base cost:                                       = $70.00/month
+```
+
+**Winner**: **Consumption Plan** ($0.83 vs $70.00 = **98.8% cheaper**)
+
+---
+
+### Cold Start Impact Analysis
+
+#### Cold Start Frequency
+
+**Consumption Plan Idle Timeout**: 20 minutes
+
+**SCIM Sync Pattern**:
+- Scheduled syncs: Every 30 minutes (8:00 AM - 6:00 PM)
+- Gap between syncs: 30 minutes
+- Idle timeout: 20 minutes
+
+**Cold Start Calculation**:
+- If sync takes <10 minutes to complete: Instance stays warm for 10 min after sync
+- Next sync in 30 minutes: Instance has been idle for 20+ minutes → **cold start**
+- **Frequency**: Potentially **every sync** experiences cold start on first request
+
+**Monthly Cold Starts** (10 tenants, 16 syncs/day):
+- Cold starts per day: ~16 (one per sync window per tenant)
+- Cold starts per month: ~480 cold starts
+- Warm requests: 460K - 480 = 459,520 warm requests
+
+#### Latency Distribution
+
+**With Cold Starts** (Consumption Plan):
+- Cold start requests (480/month): 1-3 seconds (0.1% of requests)
+- Warm requests (459,520/month): 50-200ms (99.9% of requests)
+- **p95 latency**: ~200ms (dominated by warm requests)
+- **p99 latency**: ~1.5s (includes some cold starts)
+- **p99.9 latency**: ~3s (worst-case cold starts)
+
+**Without Cold Starts** (App Service):
+- All requests: 50-200ms
+- **p95 latency**: ~150ms
+- **p99 latency**: ~200ms
+- **p99.9 latency**: ~300ms
+
+### Cost-Benefit Comparison
+
+| Dimension | Consumption Plan | App Service S1 | Analysis |
+|-----------|------------------|----------------|----------|
+| **Monthly Cost (Realistic)** | $0.83 | $70.00 | **Consumption 98.8% cheaper** |
+| **Monthly Cost (High Traffic)** | $17.28 | $70.00 | **Consumption 75% cheaper** |
+| **Cold Starts/Month** | ~480 | 0 | **480 degraded requests** |
+| **Cold Start Impact** | 0.1% of requests | 0% | **Minimal user impact** |
+| **p95 Latency** | ~200ms | ~150ms | **Nearly identical** |
+| **p99 Latency** | ~1.5s | ~200ms | **Consumption 7× worse** |
+| **First Request After Idle** | 1-3s | 50ms | **Consumption 20-60× worse** |
+| **Developer Experience** | Functions-specific | Standard .NET | **App Service better** |
+| **Local Development** | Functions emulator | Kestrel (native) | **App Service simpler** |
+| **Testing Complexity** | Medium | Low | **App Service easier** |
+| **Monitoring** | Per-function (excellent) | Per-endpoint (good) | **Consumption better** |
+| **Scaling** | Automatic (0-200) | Manual setup required | **Consumption simpler** |
+| **Predictable Costs** | Pay-per-use (variable) | Fixed $70/month | **App Service predictable** |
+
+### Break-Even Analysis
+
+**When does App Service become cheaper than Consumption?**
+
+At 460K req/month realistic traffic:
+- Consumption: $0.83/month
+- App Service: $70.00/month
+- **Break-even**: Never (Consumption always cheaper at this scale)
+
+At 9.6M req/month high traffic:
+- Consumption: $17.28/month
+- App Service: $70.00/month
+- **Break-even**: ~40M requests/month
+
+**Calculation**:
+```
+App Service cost = Consumption cost
+$70 = (requests × $0.20/1M) + (requests × 0.1s × 1GB × $0.000016/GB-s)
+$70 = requests × ($0.20 + $1.60) / 1M
+$70 = requests × $1.80 / 1M
+requests = $70 × 1M / $1.80
+requests = 38.9M requests/month
+```
+
+**Reality Check**: 38.9M requests/month = 1.3M requests/day = 54K requests/hour (continuous). This is **100× higher** than realistic SCIM workload.
+
+### Objective Recommendation
+
+#### If Cost is Primary Concern: **Azure Functions Consumption Plan**
+
+**Justification**:
+- **$0.83/month** vs $70.00/month = **98.8% cost reduction**
+- **$840/year savings** for minimal functional impact
+- Cold starts affect only 0.1% of requests (480 out of 460K)
+- SCIM sync is not user-facing (admins won't notice 1-3s first-request delay)
+- Entra ID sync clients are fault-tolerant (can handle occasional latency)
+
+**Acceptable Tradeoffs**:
+- ~480 cold starts/month (first request of each sync window)
+- p99 latency: 1.5s vs 200ms (affects 1% of requests)
+- Functions-specific development patterns (worth cost savings)
+
+#### If Performance/Developer Experience is Primary: **App Service Standard S1**
+
+**Justification**:
+- **Zero cold starts** (consistent 50-200ms latency)
+- **Standard .NET patterns** (easier development, testing, onboarding)
+- **Predictable costs** ($70/month fixed, easier budgeting)
+- **Better p99 latency** (200ms vs 1.5s)
+
+**Tradeoffs**:
+- **$840/year higher cost** for minimal performance benefit
+- Fixed cost regardless of actual usage (wasteful if traffic is low)
+
+### Decision Framework
+
+**Choose Consumption Plan IF**:
+- Budget is constrained (startups, side projects, proof-of-concept)
+- Traffic is low/moderate (<10M req/month)
+- Cold start latency is acceptable (not user-facing, batch operations)
+- Cost predictability is less important than absolute cost
+
+**Choose App Service S1 IF**:
+- Performance consistency is critical (strict SLAs)
+- Developer experience matters (standard .NET, easier onboarding)
+- Cost predictability is important (fixed budgeting)
+- Cold starts are unacceptable (even 0.1% impact)
+- Future growth expected (easier to scale up within App Service tiers)
+
+### Updated Recommendation
+
+Given the **98.8% cost reduction** ($0.83 vs $70/month) with **minimal functional impact** (0.1% of requests affected), **Azure Functions Consumption Plan** becomes the more rational choice when FR-046 is relaxed.
+
+**Recommendation**: Start with **Consumption Plan**, monitor p99 latency and cold start impact, and upgrade to **App Service S1** or **Functions Premium EP1** if cold starts become problematic in production.
+
+**Migration Path**: Azure Functions code can run on Dedicated App Service Plan with minimal changes if cold starts become an issue, providing a clear upgrade path.
+
+---
+
+**Version**: 1.1.0 | **Date**: 2025-11-22 | **Status**: Consumption Plan Reconsidered
