@@ -31,7 +31,14 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Required Compliance Validations:**
+- [ ] SCIM 2.0 Specification Compliance: All endpoints align with Microsoft SCIM 2.0 (RFC 7643)
+- [ ] Authentication & Authorization: OAuth 2.0 Bearer token validation implemented
+- [ ] Comprehensive Audit Logging: CRUD operations logged with full context to Application Insights
+- [ ] Azure Deployment: Solution runs on Azure Functions or App Service (serverless)
+- [ ] Test Coverage: Contract + integration tests written and passing before implementation
+- [ ] Security Review: No authentication bypasses, no unlogged operations, no credentials in code/logs
+- [ ] Tenant Isolation: Cross-tenant data access prevented cryptographically
 
 ## Project Structure
 

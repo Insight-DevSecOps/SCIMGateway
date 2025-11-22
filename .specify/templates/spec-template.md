@@ -84,11 +84,16 @@
 
 ### Functional Requirements
 
-- **FR-001**: System MUST [specific capability, e.g., "allow users to create accounts"]
-- **FR-002**: System MUST [specific capability, e.g., "validate email addresses"]  
-- **FR-003**: Users MUST be able to [key interaction, e.g., "reset their password"]
-- **FR-004**: System MUST [data requirement, e.g., "persist user preferences"]
-- **FR-005**: System MUST [behavior, e.g., "log all security events"]
+- **FR-001**: System MUST conform to Microsoft SCIM 2.0 specification (RFC 7643) for all endpoints
+- **FR-002**: System MUST authenticate all incoming requests using OAuth 2.0 Bearer tokens per Microsoft SCIM guidelines
+- **FR-003**: System MUST enforce tenant isolation; cross-tenant data access MUST be cryptographically impossible
+- **FR-004**: System MUST log all CRUD operations to Azure Application Insights with: timestamp, actor, operation type, resource ID, old/new values, result status, errors
+- **FR-005**: System MUST validate and reject invalid/expired authentication tokens with proper SCIM error responses
+- **FR-006**: System MUST implement rate limiting on failed authentication attempts
+- **FR-007**: System MUST store all downstream SaaS credentials in Azure Key Vault, never in code or unencrypted storage
+- **FR-008**: System MUST sanitize/redact PII from all logs per compliance requirements
+- **FR-009**: System MUST run as Azure Function (preferred) or Azure App Service with serverless auto-scaling
+- **FR-010**: System MUST achieve <2s p95 latency for typical SCIM operations per performance requirements
 
 *Example of marking unclear requirements:*
 

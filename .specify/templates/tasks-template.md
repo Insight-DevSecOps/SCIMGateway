@@ -62,12 +62,16 @@ description: "Task list template for feature implementation"
 
 Examples of foundational tasks (adjust based on your project):
 
-- [ ] T004 Setup database schema and migrations framework
-- [ ] T005 [P] Implement authentication/authorization framework
-- [ ] T006 [P] Setup API routing and middleware structure
-- [ ] T007 Create base models/entities that all stories depend on
-- [ ] T008 Configure error handling and logging infrastructure
-- [ ] T009 Setup environment configuration management
+- [ ] T004 Setup Azure Key Vault integration for secrets management (managed identity authentication)
+- [ ] T005 [P] Implement OAuth 2.0 Bearer token authentication and validation per Microsoft SCIM spec
+- [ ] T006 [P] Setup Application Insights integration for audit logging (all CRUD operations)
+- [ ] T007 [P] Implement tenant isolation enforcement (cryptographic isolation, request validation)
+- [ ] T008 [P] Setup Azure Function/App Service deployment pipeline (IaC with Bicep/Terraform)
+- [ ] T009 Create base SCIM schema validators per RFC 7643 specification
+- [ ] T010 Implement centralized audit logging middleware (timestamp, actor, operation, resource, values, status, errors)
+- [ ] T011 Setup error handling and response formatting per SCIM error specifications
+- [ ] T012 Configure rate limiting for failed authentication attempts
+- [ ] T013 Implement PII sanitization/redaction for all logs
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -150,12 +154,18 @@ Examples of foundational tasks (adjust based on your project):
 
 **Purpose**: Improvements that affect multiple user stories
 
-- [ ] TXXX [P] Documentation updates in docs/
+- [ ] TXXX [P] Audit log validation: verify all CRUD operations are logged correctly with full context
+- [ ] TXXX [P] Security scanning: verify no credentials in logs, code, or environment
+- [ ] TXXX [P] SCIM compliance tests: verify endpoints conform to Microsoft SCIM 2.0 (RFC 7643) and AzureAD reference implementation
+- [ ] TXXX [P] Load testing: verify 1000 req/s scalability with <2s p95 latency
+- [ ] TXXX [P] Tenant isolation tests: verify cross-tenant data access is impossible
+- [ ] TXXX Documentation updates in docs/
 - [ ] TXXX Code cleanup and refactoring
 - [ ] TXXX Performance optimization across all stories
-- [ ] TXXX [P] Additional unit tests (if requested) in tests/unit/
-- [ ] TXXX Security hardening
+- [ ] TXXX [P] Security hardening review
 - [ ] TXXX Run quickstart.md validation
+- [ ] TXXX Verify Azure deployment (Function/App Service, Key Vault, Application Insights, IaC)
+- [ ] TXXX Create runbook for production incident response and audit log review
 
 ---
 
