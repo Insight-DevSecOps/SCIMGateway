@@ -36,29 +36,59 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T011 Create AdapterConfiguration model in src/Configuration/AdapterConfiguration.cs (credentials, endpoints, transformation rules, rate limits, timeouts, retry policy)
-- [ ] T012 [P] Setup Azure Key Vault integration in src/Configuration/KeyVaultManager.cs (managed identity authentication, credential retrieval)
-- [ ] T013 [P] Implement BearerTokenValidator in src/Authentication/BearerTokenValidator.cs (OAuth 2.0 token validation per Microsoft SCIM spec, signature verification, claims validation)
-- [ ] T014 [P] Implement TenantResolver in src/Authentication/TenantResolver.cs (extract tid claim from token, enforce tenant isolation)
-- [ ] T015 [P] Setup Application Insights SDK in src/Core/AuditLogger.cs (telemetry client initialization, custom events for CRUD operations)
-- [ ] T016 [P] Implement AuditLogger in src/Core/AuditLogger.cs (log timestamp, actor from oid claim, operation type, resource ID, old/new values, status, errors to Application Insights)
-- [ ] T017 [P] Implement RateLimiter in src/Authentication/RateLimiter.cs (token bucket algorithm for failed auth attempts, per-tenant limits)
-- [ ] T018 [P] Create ScimUser model in src/Models/ScimUser.cs per RFC 7643 (id, userName, displayName, name, emails, phoneNumbers, active, groups, roles, externalId, meta, plus internal: tenantId, adapterId, syncState)
-- [ ] T019 [P] Create ScimGroup model in src/Models/ScimGroup.cs per RFC 7643 (id, displayName, members, description, externalId, meta, plus internal: tenantId, providerMappings, entitlementMapping)
-- [ ] T020 [P] Create EntitlementMapping model in src/Models/EntitlementMapping.cs (providerId, providerEntitlementId, name, type, mappedGroups, priority)
-- [ ] T021 [P] Create SyncState model in src/Models/SyncState.cs (id, tenantId, providerId, lastSyncTimestamp, syncDirection, lastKnownState, driftLog, conflictLog, errorLog)
-- [ ] T022 [P] Create AuditLogEntry model in src/Models/AuditLogEntry.cs (timestamp, tenantId, actorId, actorType, operationType, resourceType, resourceId, userName, httpStatus, responseTimeMs, requestId, adapterId, oldValue, newValue, errorCode, errorMessage)
-- [ ] T023 Implement SchemaValidator in src/Core/SchemaValidator.cs (validate SCIM User/Group schemas per RFC 7643, required attributes, email format RFC 5322, multi-valued attributes)
-- [ ] T024 [P] Implement ErrorHandler in src/Core/ErrorHandler.cs (translate exceptions to SCIM error responses per RFC 7644, status codes 400/401/403/404/409/412/422/429/500/501)
-- [ ] T025 [P] Implement ResponseFormatter in src/Core/ResponseFormatter.cs (format SCIM responses per RFC 7643, ListResponse schema, resource location URIs)
-- [ ] T026 [P] Implement PiiRedactor in src/Utilities/PiiRedactor.cs (redact email partial mask, phone partial mask, address full redaction per GDPR/CCPA)
-- [ ] T027 [P] Setup Azure Cosmos DB client in src/Configuration/CosmosDbClient.cs (connection with managed identity, database/container references for sync-state, users, groups, transformation-rules, audit-logs)
-- [ ] T028 [P] Create Cosmos DB schema per contracts/cosmos-db-schema.md (5 containers with /tenantId partition key, indexing policies, TTL for audit-logs)
-- [ ] T029 [P] Implement ConnectionPool in src/Utilities/ConnectionPool.cs (HTTP client pooling for provider API calls, per-adapter connection management)
-- [ ] T030 Create RequestHandler in src/Core/RequestHandler.cs (parse SCIM requests, route to appropriate handler, extract tenant from token, validate schema)
-- [ ] T031 [P] Implement FilterParser in src/Utilities/FilterParser.cs (parse SCIM filter expressions per RFC 7644, support eq/ne/co/sw/ew/pr/gt/ge/lt/le/and/or/not operators)
-- [ ] T032 [P] Setup authentication middleware in src/Core/Middleware/AuthenticationMiddleware.cs (validate Bearer token on all requests, extract tenant/actor, enforce tenant isolation, rate limit failures)
-- [ ] T033 [P] Setup audit logging middleware in src/Core/Middleware/AuditMiddleware.cs (capture all CRUD operations, log to Application Insights with full context)
+### 2A: Contract Tests (Test-First per Constitution)
+
+- [ ] T011a Contract test for AdapterConfiguration model in tests/Contract/AdapterConfigurationTests.cs (validate required fields: credentials, endpoints, transformation rules, rate limits, timeouts, retry policy, verify schema)
+- [ ] T012a Contract test for KeyVaultManager in tests/Contract/KeyVaultManagerTests.cs (mock Azure SDK, verify managed identity authentication, credential retrieval)
+- [ ] T013a Contract test for BearerTokenValidator in tests/Contract/BearerTokenValidatorTests.cs (OAuth 2.0 token validation per RFC, verify claims validation, signature verification, expired token rejection)
+- [ ] T014a Contract test for TenantResolver in tests/Contract/TenantResolverTests.cs (verify tid extraction, enforce tenant isolation, cross-tenant access rejection)
+- [ ] T015a Contract test for Application Insights SDK integration in tests/Contract/ApplicationInsightsTests.cs (verify telemetry event schema, custom events for CRUD operations)
+- [ ] T016a Contract test for AuditLogger in tests/Contract/AuditLoggerTests.cs (verify log structure: timestamp, actor, operation, resource ID, old/new values, status, errors)
+- [ ] T017a Contract test for RateLimiter in tests/Contract/RateLimiterTests.cs (verify token bucket algorithm, per-tenant limits, lock after N failures)
+- [ ] T018a Contract test for ScimUser model in tests/Contract/ScimUserModelTests.cs (validate RFC 7643 User schema compliance, required attributes, optional attributes, internal attributes)
+- [ ] T019a Contract test for ScimGroup model in tests/Contract/ScimGroupModelTests.cs (validate RFC 7643 Group schema compliance, members array, internal attributes)
+- [ ] T020a Contract test for EntitlementMapping model in tests/Contract/EntitlementMappingTests.cs (validate required fields: providerId, providerEntitlementId, name, type, mappedGroups, priority)
+- [ ] T021a Contract test for SyncState model in tests/Contract/SyncStateTests.cs (validate state transitions, required fields: tenantId, providerId, lastSyncTimestamp, syncDirection, lastKnownState)
+- [ ] T022a Contract test for AuditLogEntry model in tests/Contract/AuditLogEntryTests.cs (validate required fields per FR-011: timestamp, tenantId, actorId, operationType, resourceType, resourceId, httpStatus, responseTimeMs)
+- [ ] T023a Contract test for SchemaValidator in tests/Contract/SchemaValidatorTests.cs (verify RFC 7643 validation rules, required attributes, email format RFC 5322, multi-valued attributes, rejection of invalid schemas)
+- [ ] T024a Contract test for ErrorHandler in tests/Contract/ErrorHandlerTests.cs (verify SCIM error response format per RFC 7644, all status codes: 400/401/403/404/409/412/422/429/500/501, scimType mappings)
+- [ ] T025a Contract test for ResponseFormatter in tests/Contract/ResponseFormatterTests.cs (verify SCIM ListResponse schema, resource location URIs, pagination metadata)
+- [ ] T026a Contract test for PiiRedactor in tests/Contract/PiiRedactorTests.cs (verify email/phone/address redaction patterns, partial masking, full redaction per GDPR/CCPA)
+- [ ] T027a Contract test for CosmosDbClient in tests/Contract/CosmosDbClientTests.cs (mock Azure SDK, verify connection with managed identity, database/container references)
+- [ ] T028a Contract test for Cosmos DB schema in tests/Contract/CosmosDbSchemaTests.cs (validate partition keys /tenantId, indexing policies, TTL configuration for audit-logs container)
+- [ ] T029a Contract test for ConnectionPool in tests/Contract/ConnectionPoolTests.cs (verify HTTP client pooling, per-adapter management, connection reuse, timeout handling)
+- [ ] T030a Contract test for RequestHandler in tests/Contract/RequestHandlerTests.cs (verify SCIM request parsing, routing logic, tenant extraction, schema validation)
+- [ ] T031a Contract test for FilterParser in tests/Contract/FilterParserTests.cs (verify all 11 SCIM filter operators: eq, ne, co, sw, ew, pr, gt, ge, lt, le, and, or, not per RFC 7644)
+- [ ] T032a Contract test for AuthenticationMiddleware in tests/Contract/AuthenticationMiddlewareTests.cs (verify token validation, tenant extraction, tenant isolation enforcement, rate limiting)
+- [ ] T033a Contract test for AuditMiddleware in tests/Contract/AuditMiddlewareTests.cs (verify all CRUD operations captured, log to Application Insights with full context)
+
+**Checkpoint**: All contract tests passing - ready for implementation
+
+### 2B: Implementation (Only After Tests Pass)
+
+- [ ] T011 Create AdapterConfiguration model in src/Configuration/AdapterConfiguration.cs (credentials, endpoints, transformation rules, rate limits, timeouts, retry policy) [depends on T011a passing]
+- [ ] T012 [P] Setup Azure Key Vault integration in src/Configuration/KeyVaultManager.cs (managed identity authentication, credential retrieval) [depends on T012a passing]
+- [ ] T013 [P] Implement BearerTokenValidator in src/Authentication/BearerTokenValidator.cs (OAuth 2.0 token validation per Microsoft SCIM spec, signature verification, claims validation) [depends on T013a passing]
+- [ ] T014 [P] Implement TenantResolver in src/Authentication/TenantResolver.cs (extract tid claim from token, enforce tenant isolation) [depends on T014a passing]
+- [ ] T015 [P] Setup Application Insights SDK in src/Core/AuditLogger.cs (telemetry client initialization, custom events for CRUD operations) [depends on T015a passing]
+- [ ] T016 [P] Implement AuditLogger in src/Core/AuditLogger.cs (log timestamp, actor from oid claim, operation type, resource ID, old/new values, status, errors to Application Insights) [depends on T016a passing]
+- [ ] T017 [P] Implement RateLimiter in src/Authentication/RateLimiter.cs (token bucket algorithm for failed auth attempts, per-tenant limits) [depends on T017a passing]
+- [ ] T018 [P] Create ScimUser model in src/Models/ScimUser.cs per RFC 7643 (id, userName, displayName, name, emails, phoneNumbers, active, groups, roles, externalId, meta, plus internal: tenantId, adapterId, syncState) [depends on T018a passing]
+- [ ] T019 [P] Create ScimGroup model in src/Models/ScimGroup.cs per RFC 7643 (id, displayName, members, description, externalId, meta, plus internal: tenantId, providerMappings, entitlementMapping) [depends on T019a passing]
+- [ ] T020 [P] Create EntitlementMapping model in src/Models/EntitlementMapping.cs (providerId, providerEntitlementId, name, type, mappedGroups, priority) [depends on T020a passing]
+- [ ] T021 [P] Create SyncState model in src/Models/SyncState.cs (id, tenantId, providerId, lastSyncTimestamp, syncDirection, lastKnownState, driftLog, conflictLog, errorLog) [depends on T021a passing]
+- [ ] T022 [P] Create AuditLogEntry model in src/Models/AuditLogEntry.cs (timestamp, tenantId, actorId, actorType, operationType, resourceType, resourceId, userName, httpStatus, responseTimeMs, requestId, adapterId, oldValue, newValue, errorCode, errorMessage) [depends on T022a passing]
+- [ ] T023 Implement SchemaValidator in src/Core/SchemaValidator.cs (validate SCIM User/Group schemas per RFC 7643, required attributes, email format RFC 5322, multi-valued attributes) [depends on T023a passing]
+- [ ] T024 [P] Implement ErrorHandler in src/Core/ErrorHandler.cs (translate exceptions to SCIM error responses per RFC 7644, status codes 400/401/403/404/409/412/422/429/500/501) [depends on T024a passing]
+- [ ] T025 [P] Implement ResponseFormatter in src/Core/ResponseFormatter.cs (format SCIM responses per RFC 7643, ListResponse schema, resource location URIs) [depends on T025a passing]
+- [ ] T026 [P] Implement PiiRedactor in src/Utilities/PiiRedactor.cs (redact email partial mask, phone partial mask, address full redaction per GDPR/CCPA) [depends on T026a passing]
+- [ ] T027 [P] Setup Azure Cosmos DB client in src/Configuration/CosmosDbClient.cs (connection with managed identity, database/container references for sync-state, users, groups, transformation-rules, audit-logs) [depends on T027a passing]
+- [ ] T028 [P] Create Cosmos DB schema per contracts/cosmos-db-schema.md (5 containers with /tenantId partition key, indexing policies, TTL for audit-logs) [depends on T028a passing]
+- [ ] T029 [P] Implement ConnectionPool in src/Utilities/ConnectionPool.cs (HTTP client pooling for provider API calls, per-adapter connection management) [depends on T029a passing]
+- [ ] T030 Create RequestHandler in src/Core/RequestHandler.cs (parse SCIM requests, route to appropriate handler, extract tenant from token, validate schema) [depends on T030a passing]
+- [ ] T031 [P] Implement FilterParser in src/Utilities/FilterParser.cs (parse SCIM filter expressions per RFC 7644, support eq/ne/co/sw/ew/pr/gt/ge/lt/le/and/or/not operators) [depends on T031a passing]
+- [ ] T032 [P] Setup authentication middleware in src/Core/Middleware/AuthenticationMiddleware.cs (validate Bearer token on all requests, extract tenant/actor, enforce tenant isolation, rate limit failures) [depends on T032a passing]
+- [ ] T033 [P] Setup audit logging middleware in src/Core/Middleware/AuditMiddleware.cs (capture all CRUD operations, log to Application Insights with full context) [depends on T033a passing]
 
 **Checkpoint**: Foundation ready - user story implementation can now begin in parallel
 
@@ -245,7 +275,7 @@
 ### Implementation for User Story 5
 
 - [ ] T142 [P] [US5] Create SyncDirection enum in src/Models/SyncDirection.cs (ENTRA_TO_SAAS, SAAS_TO_ENTRA)
-- [ ] T143 [US5] Implement SyncDirectionManager in src/SyncEngine/SyncDirectionManager.cs (persist direction in Cosmos DB sync-state, load direction on startup, enforce direction during sync)
+- [ ] T143 [US5] Implement SyncDirectionManager in src/SyncEngine/SyncDirectionManager.cs (persist direction in Cosmos DB sync-state, load direction on startup, DEFAULT to ENTRA_TO_SAAS if no prior configuration exists, enforce direction during sync, log default direction selection on first startup per FR-041a)
 - [ ] T144 [US5] Implement direction enforcement in src/SyncEngine/PollingService.cs (if direction=ENTRA_TO_SAAS, ignore changes from provider; if direction=SAAS_TO_ENTRA, apply changes from provider)
 - [ ] T145 [US5] Implement "opposite direction" logging in src/Core/AuditLogger.cs (if change arrives from inactive direction, log as informational, do not apply)
 - [ ] T146 [US5] Implement direction toggle API endpoint POST /api/sync-direction in src/Core/Endpoints/SyncDirectionEndpoint.cs (accept new direction, persist to Cosmos DB, log direction change to audit log)

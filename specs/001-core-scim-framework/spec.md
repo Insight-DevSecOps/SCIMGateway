@@ -120,7 +120,7 @@
 
 **SCIM Compliance & Core Operations:**
 - **FR-001**: SDK MUST implement SCIM 2.0 Core Schema (RFC 7643) for Users and Groups with all required and optional attributes
-- **FR-002**: SDK MUST expose HTTP endpoints `/Users`, `/Users/{id}`, `/Groups`, `/Groups/{id}`, `/Me`, `/.well-known/scim-configuration` per SCIM spec
+- **FR-002**: SDK MUST expose HTTP endpoints per RFC 7644: `/Users`, `/Users/{id}`, `/Groups`, `/Groups/{id}`, `/Schemas`, `/ServiceProviderConfig`, `/ResourceTypes`
 - **FR-003**: SDK MUST support SCIM CREATE, READ, UPDATE, DELETE (CRUD) operations on Users and Groups
 - **FR-004**: SDK MUST support SCIM PATCH operations for partial updates per RFC 6902 JSON Patch
 - **FR-005**: SDK MUST support SCIM filter expressions on Users and Groups (e.g., `filter=userName eq "john.doe"`)
@@ -172,6 +172,7 @@
 - **FR-039**: SDK MUST NOT apply operations from inactive direction; opposite direction changes logged as "informational only"
 - **FR-040**: SDK MUST store sync direction in persistent configuration (survives restart)
 - **FR-041**: SDK MUST handle direction toggle gracefully during active sync (complete current cycle, apply new direction next cycle)
+- **FR-041a**: SDK MUST default to ENTRA_TO_SAAS sync direction on first deployment unless explicitly configured otherwise in initial configuration. System MUST log default direction selection on first startup with rationale.
 
 **Data Protection & Security:**
 - **FR-042**: SDK MUST store adapter credentials (API keys, OAuth tokens for providers) in Azure Key Vault; never in code or config files
