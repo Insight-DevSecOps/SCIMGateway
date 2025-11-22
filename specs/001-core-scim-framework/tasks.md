@@ -146,7 +146,7 @@
 
 **Goal**: Adapter interface defined, mock adapter works, SDK routes requests to adapters correctly
 
-**Independent Test**: Define adapter interface contract, implement mock adapter, verify core SDK calls adapter methods correctly for each CRUD operation
+**Independent Test**: Define adapter interface contract, implement mock adapter, verify core SDK calls adapter methods correctly for each CRUD operation. Can be tested independently via contract tests.
 
 ### Implementation for User Story 2
 
@@ -182,7 +182,7 @@
 
 **Goal**: Group/entitlement transformation rules defined, engine applies transformations, reverse transforms work
 
-**Independent Test**: Define transformation rule, group operation is transformed per rule, reverse transformation recovers original group representation
+**Independent Test**: Define transformation rule, group operation is transformed per rule, reverse transformation recovers original group representation. Can be tested with unit and contract tests.
 
 ### Implementation for User Story 3
 
@@ -230,7 +230,7 @@
 
 **Goal**: SDK can poll provider, detect changes, report drift, identify conflicts
 
-**Independent Test**: Poll provider, SDK detects new/modified/deleted users and groups, drift report includes all changes with timestamps
+**Independent Test**: Poll provider, SDK detects new/modified/deleted users and groups, drift report includes all changes with timestamps. Can be tested with integration tests.
 
 ### Implementation for User Story 4
 
@@ -270,7 +270,7 @@
 
 **Goal**: Sync direction can be toggled between push/pull, direction enforced, toggle logged
 
-**Independent Test**: Switch direction from push to pull, verify next sync pulls from provider; switch back to push, verify next changes push to Entra
+**Independent Test**: Switch direction from push to pull, verify next sync pulls from provider; switch back to push, verify next changes push to Entra. Can be tested with integration and configuration tests.
 
 ### Implementation for User Story 5
 

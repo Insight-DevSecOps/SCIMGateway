@@ -205,6 +205,18 @@
 - **In Cosmos DB**: Use kebab-case for container names (users, groups, sync-state, audit-logs, adapter-config)
 - **In API endpoints**: Use kebab-case (e.g., /api/transform/preview, /api/drift/{driftId}/reconcile)
 
+**Capitalization Conventions:**
+- **Prose**: "SaaS" (mixed case, industry standard for Software as a Service)
+- **Enum constants**: "SAAS" (all caps, e.g., `ENTRA_TO_SAAS`, `SAAS_TO_ENTRA`)
+- **Code identifiers**: "Saas" or "SaaS" depending on language conventions (C# typically uses `Saas`)
+
+**Terminology Glossary:**
+- **Adapter**: Software component implementing IAdapter interface (e.g., SalesforceAdapter, WorkdayAdapter)
+- **Provider**: External SaaS system with APIs (e.g., Salesforce, Workday, ServiceNow)
+- **Provider API**: REST APIs exposed by the SaaS provider for integration
+- **Gateway**: This SCIM Gateway SDK - the middleware between Entra ID and SaaS providers
+- **Entra ID**: Microsoft Entra ID (formerly Azure AD), the source of truth for users and groups
+
 **User**
 - SCIM attributes: id, userName, displayName, name (familyName, givenName), emails, phoneNumbers, active, groups, roles, externalId, meta (created, lastModified, location, version)
 - Internal attributes: tenantId, adapterId, providerUserId, lastSyncTimestamp, syncDirection, state
