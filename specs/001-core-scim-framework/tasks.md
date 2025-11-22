@@ -243,7 +243,7 @@
 - [ ] T124 [US4] Implement drift logging in src/Core/AuditLogger.cs (log all drift detections to Application Insights, capture resource ID, old value, new value, timestamp)
 - [ ] T125 [US4] Implement Reconciler in src/SyncEngine/Reconciler.cs (reconciliation strategies: auto-apply based on sync direction, manual review, ignore)
 - [ ] T126 [US4] Implement reconciliation strategy AUTO_APPLY in src/SyncEngine/Reconciler.cs (if direction=ENTRA_TO_SAAS, overwrite provider with Entra state; if direction=SAAS_TO_ENTRA, overwrite Entra with provider state)
-- [ ] T127 [US4] Implement reconciliation strategy MANUAL_REVIEW in src/SyncEngine/Reconciler.cs (create conflict log entry, notify operations team, block auto-sync for conflicted resource)
+- [ ] T127 [US4] Implement reconciliation strategy MANUAL_REVIEW in src/SyncEngine/Reconciler.cs (create conflict log entry, notify operations team, block auto-sync for conflicted resource, expose POST /api/drift/{driftId}/reconcile endpoint for admin approval with selected direction)
 - [ ] T128 [US4] Implement reconciliation strategy IGNORE in src/SyncEngine/Reconciler.cs (log drift as informational, do not apply changes)
 - [ ] T129 [US4] Implement PollingService in src/SyncEngine/PollingService.cs (scheduled polling via timer trigger or cron job, call adapter ListUsersAsync/ListGroupsAsync, invoke ChangeDetector)
 - [ ] T130 [US4] Implement sync state snapshot in src/SyncEngine/SyncState.cs (capture snapshotChecksum, snapshotTimestamp, userCount, groupCount after each sync)
@@ -297,6 +297,8 @@
 ## Phase 8: Adapters - Example Implementations (Priority: P2)
 
 **Goal**: Adapter implementations for Salesforce, Workday, ServiceNow (example adapters, real-world tested)
+
+**Dependencies**: Requires Phase 2 (Foundational infrastructure) + Phase 4 (IAdapter interface) + Phase 5 (Transformation rules T101-T103) COMPLETE before starting. Phase 5 transformation engine MUST be operational because adapters rely on group→entitlement transformations. Individual adapters (Salesforce, Workday, ServiceNow) can be built in parallel once dependencies are met.
 
 **Independent Test**: Each adapter can be swapped in, end-to-end flows work (create user Entra→provider, detect changes)
 
@@ -449,6 +451,8 @@
 ---
 
 ## Implementation Strategy
+
+**Timeline Notes**: Phases overlap extensively after Phase 2 (Foundational) completes. Phases 3-7 represent user stories that can progress in parallel once foundational infrastructure (Phase 2) is ready. Phase 8 (Adapters) depends on Phase 5 (Transformation rules) completion. Phase 9 (Security/Perf) runs continuously alongside implementation phases. Phase 10 (Documentation) tracks all phases. See "Parallel Team Strategy" below for team coordination guidance.
 
 ### MVP First (User Stories 1-3 Only)
 

@@ -23,6 +23,7 @@
 4. **Given** an invalid request **When** SDK receives malformed JSON or violates SCIM schema **Then** SDK returns SCIM-compliant error response (400/422) with descriptive error message
 5. **Given** a request without Bearer token **When** request is received **Then** SDK rejects with 401 Unauthorized
 6. **Given** a Bearer token **When** token is invalid or expired **Then** SDK rejects with 401, logs rejection, increments rate limit counter
+7. **Given** a bulk request with 50 user create operations **When** SDK processes bulk request **Then** SDK returns partial success with succeeded/failed counts and per-resource error details per RFC 7644 Section 3.7
 
 ---
 
@@ -84,6 +85,7 @@
 5. **Given** drift exists **When** reconciliation is triggered **Then** system applies configured resolution (Entra→Provider, Provider→Entra, or manual)
 6. **Given** a full sync cycle **When** completed **Then** system updates "last sync state" and "last sync timestamp" for next cycle
 7. **Given** sync errors occur **When** adapter cannot reach provider **Then** system logs error, retries per configured policy, alerts operations team
+8. **Given** drift detected with MANUAL_REVIEW reconciliation strategy **When** operations team queries drift **Then** system exposes GET /api/drift endpoint to list drift items and POST /api/drift/{driftId}/reconcile endpoint for admin-approved resolution with selected direction (ENTRA_TO_SAAS or SAAS_TO_ENTRA)
 
 ---
 
@@ -185,7 +187,7 @@
 **Performance & Scalability:**
 - **FR-046**: SDK internal processing (excluding adapter and provider API latency) MUST achieve p95 latency <500ms for typical CRUD operations. End-to-end request processing (SDK + adapter + provider API) SHOULD target p95 <2s, but is provider-dependent and best-effort.
 - **FR-047**: SDK MUST handle 1000 concurrent requests per deployment unit
-- **FR-048**: SDK MUST support batch operations (create multiple users/groups in single request)
+- **FR-048**: SDK MUST support batch operations per RFC 7644 Section 3.7 (Bulk Operations). MUST support minimum 100 resources per bulk request. MUST return partial success results (e.g., 3/5 users created, 2 failed with specific error details). MUST implement bulk request validation before processing.
 - **FR-049**: SDK MUST implement connection pooling and caching for adapter connections
 
 **Configuration & Deployment:**
@@ -196,6 +198,12 @@
 - **FR-053**: SDK MUST expose health check endpoint for monitoring
 
 ### Key Entities *(data model)*
+
+**Naming Conventions:**
+- **In prose/documentation**: Use Title Case for concepts (User, Group, Adapter, Transformation Rule)
+- **In code/classes**: Use PascalCase (User, Group, IAdapter, TransformationRule)
+- **In Cosmos DB**: Use kebab-case for container names (users, groups, sync-state, audit-logs, adapter-config)
+- **In API endpoints**: Use kebab-case (e.g., /api/transform/preview, /api/drift/{driftId}/reconcile)
 
 **User**
 - SCIM attributes: id, userName, displayName, name (familyName, givenName), emails, phoneNumbers, active, groups, roles, externalId, meta (created, lastModified, location, version)

@@ -221,6 +221,8 @@ This structure enables:
 
 ### Phase 3: User Story 1 - Core SCIM Operations (Week 5-6, parallel with F1-F12)
 
+**Note**: Phases 3-7 can overlap once Phase 2 (Foundational) completes. Multiple developers can work on different user stories simultaneously as long as Phase 2 infrastructure is ready.
+
 **Goal**: Users and groups can be created, read, updated, deleted via SCIM endpoints
 
 - [ ] US1-T1: Implement POST /Users endpoint (create user with SCIM validation)
