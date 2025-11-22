@@ -63,6 +63,7 @@
 5. **Given** transformation rules **When** new provider adapter added **Then** rules can be configured per-provider without modifying core transformation engine
 6. **Given** a transformation rule **When** rule cannot be applied (no mapping exists) **Then** system logs warning, returns error, and admin can resolve via configuration
 7. **Given** transformation rules **When** user queries group membership **Then** system applies reverse transformation to return SCIM-compliant group representation
+8. **Given** transformation preview API endpoint POST /api/transform/preview **When** admin provides sample input (group name, provider ID, tenant ID) with Bearer token authentication **Then** system returns transformed entitlement representation WITHOUT persisting changes, includes matched rule, transformation result, and conflicts if any
 
 ---
 
@@ -139,13 +140,14 @@
 - **FR-014**: SDK MUST log all drift detections with: drift type (user added/modified/deleted/group changed), old state, new state, timestamp, affected users/groups
 - **FR-015**: SDK MUST log all sync direction changes with: previous direction, new direction, timestamp, triggered by (manual/auto)
 - **FR-016**: SDK MUST NOT log sensitive data (passwords, tokens, PII); logs MUST be sanitized/redacted
+- **FR-016a**: Audit logs MUST be retained in Application Insights for minimum 90 days per compliance requirements. Long-term retention (>90 days) MAY be configured via Cosmos DB audit-logs container with configurable TTL per tenant policy. Retention policy MUST be documented in deployment guide.
 
 **Adapter Pattern & Extensibility:**
-- **FR-017**: SDK MUST define a standard Adapter interface with methods: `createUser()`, `readUser()`, `updateUser()`, `deleteUser()`, `createGroup()`, `readGroup()`, `updateGroup()`, `deleteGroup()`, `mapGroupToEntitlements()`
+- **FR-017**: SDK MUST define a standard Adapter interface with methods per contracts/adapter-interface.md including: user CRUD operations, group CRUD operations, group membership management, entitlement mapping, health checks, and capability discovery
 - **FR-018**: SDK MUST allow adapters to be registered per SaaS provider; routing based on configuration
 - **FR-019**: SDK MUST provide adapter context/utilities: SCIM schema validation, error handling, logging, key management (Azure Key Vault integration)
 - **FR-020**: SDK MUST catch and handle adapter exceptions gracefully; translate adapter errors to SCIM error responses
-- **FR-021**: SDK MUST allow multiple adapters to be active simultaneously for multi-SaaS environments
+- **FR-021**: SDK MUST allow multiple adapters to be active simultaneously for multi-SaaS environments (target: 3+ providers per deployment per SC-004)
 
 **Group/Entitlement Transformation:**
 - **FR-022**: SDK MUST provide a transformation engine that maps SCIM groups to provider-specific entitlement models (roles, permissions, org hierarchy, departments)
@@ -181,13 +183,14 @@
 - **FR-045**: SDK MUST enforce TLS 1.2+ for all external communications
 
 **Performance & Scalability:**
-- **FR-046**: SDK MUST achieve p95 latency <2s for typical CRUD operations
+- **FR-046**: SDK internal processing (excluding adapter and provider API latency) MUST achieve p95 latency <500ms for typical CRUD operations. End-to-end request processing (SDK + adapter + provider API) SHOULD target p95 <2s, but is provider-dependent and best-effort.
 - **FR-047**: SDK MUST handle 1000 concurrent requests per deployment unit
 - **FR-048**: SDK MUST support batch operations (create multiple users/groups in single request)
 - **FR-049**: SDK MUST implement connection pooling and caching for adapter connections
 
 **Configuration & Deployment:**
 - **FR-050**: SDK MUST run on Azure Functions (HTTP-triggered) or Azure App Service
+- **FR-050a**: Stack choice (Functions vs App Service) MUST be documented in research.md with decision criteria: projected cost at 100k users, cold start tolerance, scaling requirements, and developer experience. Choice MUST be made during Phase 0 research.
 - **FR-051**: SDK MUST be deployable via Infrastructure-as-Code (Bicep or Terraform)
 - **FR-052**: SDK MUST support environment-based configuration (dev, staging, production)
 - **FR-053**: SDK MUST expose health check endpoint for monitoring

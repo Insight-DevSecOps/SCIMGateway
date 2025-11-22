@@ -181,6 +181,7 @@ This structure enables:
 - [ ] **R6**: Document group model diversity (Salesforce=roles, Workday=org hierarchy, ServiceNow=groups)
 - [ ] **R7**: Design adapter interface contract (methods, error handling, context utilities)
 - [ ] **R8**: Design transformation rule format (source→target mapping, priority, conflicts)
+- [ ] **R9**: Document decision criteria for Azure Functions vs App Service (cost comparison at 100k users, cold start requirements, scaling needs, stateful vs stateless, development complexity). Recommend deployment target and document rationale. Decision MUST be made before Phase 1 begins.
 
 **Output**: `research.md` with findings, `contracts/adapter-interface.md` with contract definition
 

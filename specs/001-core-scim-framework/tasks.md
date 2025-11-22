@@ -83,7 +83,7 @@
 - [ ] T025 [P] Implement ResponseFormatter in src/Core/ResponseFormatter.cs (format SCIM responses per RFC 7643, ListResponse schema, resource location URIs) [depends on T025a passing]
 - [ ] T026 [P] Implement PiiRedactor in src/Utilities/PiiRedactor.cs (redact email partial mask, phone partial mask, address full redaction per GDPR/CCPA) [depends on T026a passing]
 - [ ] T027 [P] Setup Azure Cosmos DB client in src/Configuration/CosmosDbClient.cs (connection with managed identity, database/container references for sync-state, users, groups, transformation-rules, audit-logs) [depends on T027a passing]
-- [ ] T028 [P] Create Cosmos DB schema per contracts/cosmos-db-schema.md (5 containers with /tenantId partition key, indexing policies, TTL for audit-logs) [depends on T028a passing]
+- [ ] T028 [P] Create Cosmos DB schema per contracts/cosmos-db-schema.md (5 containers with /tenantId partition key, indexing policies, TTL for audit-logs: 90 days minimum configurable per tenant per FR-016a, other containers: -1 never expire) [depends on T028a passing]
 - [ ] T029 [P] Implement ConnectionPool in src/Utilities/ConnectionPool.cs (HTTP client pooling for provider API calls, per-adapter connection management) [depends on T029a passing]
 - [ ] T030 Create RequestHandler in src/Core/RequestHandler.cs (parse SCIM requests, route to appropriate handler, extract tenant from token, validate schema) [depends on T030a passing]
 - [ ] T031 [P] Implement FilterParser in src/Utilities/FilterParser.cs (parse SCIM filter expressions per RFC 7644, support eq/ne/co/sw/ew/pr/gt/ge/lt/le/and/or/not operators) [depends on T031a passing]
@@ -220,7 +220,7 @@
 - [ ] T114 [P] [US3] Contract test for transformation rules in tests/Contract/TransformationRuleTests.cs (verify rule format, required fields, validation)
 - [ ] T115 [P] [US3] Integration test for Salesforce transformation in tests/Integration/SalesforceTransformTests.cs (group "Sales-EMEA" → role "Sales_EMEA_Rep", verify adapter receives correct entitlement)
 - [ ] T116 [P] [US3] Integration test for Workday transformation in tests/Integration/WorkdayTransformTests.cs (group "Acme Corp/Sales/EMEA" → org "ORG-EMEA", verify hierarchical parsing)
-- [ ] T117 [P] [US3] Integration test for transformation preview in tests/Integration/TransformationPreviewTests.cs (preview transformation without applying, verify correct output)
+- [ ] T117 [P] [US3] Integration test for transformation preview in tests/Integration/TransformationPreviewTests.cs (POST /api/transform/preview with sample group name, verify returns transformed result without persisting, verify response includes: matchedRuleId, transformedEntitlement, conflicts[], appliedAt=null)
 
 **Checkpoint**: At this point, transformation engine should work - rules loaded, patterns matched, transformations applied, reverse transforms functional
 
@@ -361,7 +361,7 @@
 - [ ] T192 [P] [S] Security test for credentials in logs in tests/Security/CredentialLeakTests.cs (verify no API keys, passwords, tokens in Application Insights logs)
 - [ ] T193 [P] [S] Security test for credentials in code in tests/Security/CredentialLeakTests.cs (verify no hardcoded credentials, all from Key Vault)
 - [ ] T194 [P] [S] Security test for rate limiting in tests/Security/RateLimitTests.cs (exceed 1000 req/min → 429 Too Many Requests with Retry-After header)
-- [ ] T195 [P] [P] Load test for 1000 req/s in tests/Performance/LoadTests.cs (simulate 1000 concurrent requests, measure p95 latency, target <2s)
+- [ ] T195 [P] [P] Load test for 1000 req/s in tests/Performance/LoadTests.cs (simulate 1000 concurrent requests with mocked provider responses, measure SDK internal p95 latency, target <500ms per FR-046, measure end-to-end with simulated provider latency, document provider impact)
 - [ ] T196 [P] [P] Load test for bulk operations in tests/Performance/BulkLoadTests.cs (create 1000 users in batch, measure throughput, verify no performance degradation)
 - [ ] T197 [P] [P] Performance test for transformation engine in tests/Performance/TransformationPerformanceTests.cs (apply 100 rules to 1000 groups, verify rule caching works, measure latency)
 - [ ] T198 [P] Code coverage analysis (run xUnit with code coverage, verify >80% coverage across all modules)
@@ -384,6 +384,37 @@
 - [ ] T208 Create quickstart.md in specs/001-core-scim-framework/quickstart.md (5-minute setup guide, test scenarios per contracts)
 - [ ] T209 [P] Create Azure Resource Manager (ARM) templates in deploy/azure/ (or Bicep files for Function App, Key Vault, Cosmos DB, Application Insights)
 - [ ] T210 [P] Create CI/CD pipeline in .github/workflows/ci-cd.yml (build, test, deploy to Azure)
+
+---
+
+## Appendix A: Requirements Traceability Matrix
+
+| FR | Requirement Summary | Task IDs | Status |
+|----|---------------------|----------|--------|
+| FR-001 | SCIM schema compliance | T018, T019, T023, T048, T049 | ✅ Full |
+| FR-002 | SCIM endpoints | T034-T045 | ✅ Full |
+| FR-003 | CRUD operations | T034-T045 | ✅ Full |
+| FR-004 | PATCH operations | T037, T043, T056 | ✅ Full |
+| FR-005 | Filter expressions | T031, T031a, T058, T058a | ✅ Full |
+| FR-006 | Schema validation | T023, T023a, T048, T049 | ✅ Full |
+| FR-007-010 | OAuth authentication | T013, T013a, T014, T014a, T017, T017a, T032, T032a, T064 | ✅ Full |
+| FR-011-016 | Audit logging | T015, T015a, T016, T016a, T026, T026a, T033, T033a, T051, T052, T124 | ✅ Full |
+| FR-016a | Audit log retention | T028 | ✅ Full |
+| FR-017-021 | Adapter pattern | T066-T079 | ✅ Full |
+| FR-022-028 | Transformations | T086-T105, T117 | ✅ Full |
+| FR-029-035 | Change detection | T118-T133 | ✅ Full |
+| FR-036-041a | Sync direction | T142-T148 | ✅ Full |
+| FR-042-045 | Security | T001a, T012, T012a, T026, T026a, T187-T194 | ✅ Full |
+| FR-046-049 | Performance | T029, T029a, T195-T197 | ✅ Full |
+| FR-050-053 | Deployment | T001-T010, T008a, T209-T210 | ✅ Full |
+
+### Additional Coverage Tasks
+
+- [ ] T001a [P] Verify TLS 1.2+ enforcement in Azure Functions/App Service configuration (Azure enforces by default, document in deployment guide per FR-045)
+- [ ] T008a Create health check endpoint /health in src/Core/HealthEndpoint.cs (return 200 OK with system status, adapter connectivity, Cosmos DB status per FR-053)
+- [ ] T058a [P] [US1] Extended contract test for FilterParser in tests/Contract/FilterParserTests.cs (verify ALL 11 operators: eq, ne, co, sw, ew, pr, gt, ge, lt, le, and, or, not per FR-005)
+
+**Note**: T026a was added in Phase 2A as part of test-first restructuring to verify PII redaction across all contexts per FR-016.
 
 ---
 
