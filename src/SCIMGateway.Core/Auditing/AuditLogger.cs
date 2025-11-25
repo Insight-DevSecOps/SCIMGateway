@@ -1,0 +1,345 @@
+// ==========================================================================
+// T016: AuditLogger - Audit Logging to Application Insights
+// ==========================================================================
+// Logs all CRUD operations with PII redaction per FR-011
+// ==========================================================================
+
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using SCIMGateway.Core.Models;
+using SCIMGateway.Core.Utilities;
+
+namespace SCIMGateway.Core.Auditing;
+
+/// <summary>
+/// Interface for audit logging.
+/// </summary>
+public interface IAuditLogger
+{
+    /// <summary>
+    /// Logs an audit event.
+    /// </summary>
+    /// <param name="entry">The audit log entry.</param>
+    Task LogAsync(AuditLogEntry entry);
+
+    /// <summary>
+    /// Logs a CRUD operation.
+    /// </summary>
+    /// <param name="operationType">Type of operation.</param>
+    /// <param name="resourceType">Type of resource.</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="httpStatus">HTTP status code.</param>
+    /// <param name="responseTimeMs">Response time in milliseconds.</param>
+    /// <param name="oldValue">Previous value (for updates).</param>
+    /// <param name="newValue">New value (for creates/updates).</param>
+    Task LogOperationAsync(
+        OperationType operationType,
+        string resourceType,
+        string resourceId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs,
+        object? oldValue = null,
+        object? newValue = null);
+
+    /// <summary>
+    /// Logs an error.
+    /// </summary>
+    /// <param name="operationType">Type of operation.</param>
+    /// <param name="resourceType">Type of resource.</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="exception">The exception that occurred.</param>
+    Task LogErrorAsync(
+        OperationType operationType,
+        string resourceType,
+        string? resourceId,
+        string tenantId,
+        string actorId,
+        Exception exception);
+}
+
+/// <summary>
+/// Options for audit logging.
+/// </summary>
+public class AuditLoggerOptions
+{
+    /// <summary>
+    /// Application Insights instrumentation key.
+    /// </summary>
+    public string? InstrumentationKey { get; set; }
+
+    /// <summary>
+    /// Application Insights connection string.
+    /// </summary>
+    public string? ConnectionString { get; set; }
+
+    /// <summary>
+    /// Whether to enable PII redaction.
+    /// </summary>
+    public bool EnablePiiRedaction { get; set; } = true;
+
+    /// <summary>
+    /// Whether to log request/response bodies.
+    /// </summary>
+    public bool LogRequestBodies { get; set; } = true;
+
+    /// <summary>
+    /// Maximum body size to log (in characters).
+    /// </summary>
+    public int MaxBodySize { get; set; } = 10000;
+
+    /// <summary>
+    /// Event names for custom telemetry.
+    /// </summary>
+    public AuditEventNames EventNames { get; set; } = new();
+}
+
+/// <summary>
+/// Custom event names for audit telemetry.
+/// </summary>
+public class AuditEventNames
+{
+    public string UserCreated { get; set; } = "SCIM_UserCreated";
+    public string UserRead { get; set; } = "SCIM_UserRead";
+    public string UserUpdated { get; set; } = "SCIM_UserUpdated";
+    public string UserDeleted { get; set; } = "SCIM_UserDeleted";
+    public string UserListed { get; set; } = "SCIM_UserListed";
+    public string GroupCreated { get; set; } = "SCIM_GroupCreated";
+    public string GroupRead { get; set; } = "SCIM_GroupRead";
+    public string GroupUpdated { get; set; } = "SCIM_GroupUpdated";
+    public string GroupDeleted { get; set; } = "SCIM_GroupDeleted";
+    public string GroupListed { get; set; } = "SCIM_GroupListed";
+    public string MemberAdded { get; set; } = "SCIM_MemberAdded";
+    public string MemberRemoved { get; set; } = "SCIM_MemberRemoved";
+    public string AuthSuccess { get; set; } = "SCIM_AuthSuccess";
+    public string AuthFailure { get; set; } = "SCIM_AuthFailure";
+    public string SyncStarted { get; set; } = "SCIM_SyncStarted";
+    public string SyncCompleted { get; set; } = "SCIM_SyncCompleted";
+    public string SyncFailed { get; set; } = "SCIM_SyncFailed";
+    public string DriftDetected { get; set; } = "SCIM_DriftDetected";
+    public string ConflictDetected { get; set; } = "SCIM_ConflictDetected";
+    public string Error { get; set; } = "SCIM_Error";
+}
+
+/// <summary>
+/// Audit logger implementation using Application Insights.
+/// </summary>
+public class AuditLogger : IAuditLogger
+{
+    private readonly TelemetryClient? _telemetryClient;
+    private readonly ILogger<AuditLogger> _logger;
+    private readonly AuditLoggerOptions _options;
+    private readonly IPiiRedactor _piiRedactor;
+
+    public AuditLogger(
+        IOptions<AuditLoggerOptions> options,
+        ILogger<AuditLogger> logger,
+        IPiiRedactor piiRedactor,
+        TelemetryClient? telemetryClient = null)
+    {
+        _options = options.Value;
+        _logger = logger;
+        _piiRedactor = piiRedactor;
+        _telemetryClient = telemetryClient;
+    }
+
+    /// <inheritdoc />
+    public Task LogAsync(AuditLogEntry entry)
+    {
+        ArgumentNullException.ThrowIfNull(entry);
+
+        // Log to Application Insights
+        if (_telemetryClient != null)
+        {
+            var eventName = GetEventName(entry.OperationType, entry.ResourceType, entry.HttpStatus >= 400);
+            var telemetry = new EventTelemetry(eventName)
+            {
+                Timestamp = entry.Timestamp
+            };
+
+            // Add standard properties
+            telemetry.Properties["tenantId"] = entry.TenantId;
+            telemetry.Properties["actorId"] = entry.ActorId;
+            telemetry.Properties["actorType"] = entry.ActorType.ToString();
+            telemetry.Properties["operationType"] = entry.OperationType.ToString();
+            telemetry.Properties["resourceType"] = entry.ResourceType;
+            telemetry.Properties["resourceId"] = entry.ResourceId;
+            telemetry.Properties["httpStatus"] = entry.HttpStatus.ToString();
+            
+            if (!string.IsNullOrEmpty(entry.RequestId))
+                telemetry.Properties["requestId"] = entry.RequestId;
+            if (!string.IsNullOrEmpty(entry.CorrelationId))
+                telemetry.Properties["correlationId"] = entry.CorrelationId;
+            if (!string.IsNullOrEmpty(entry.AdapterId))
+                telemetry.Properties["adapterId"] = entry.AdapterId;
+            if (!string.IsNullOrEmpty(entry.SyncDirection))
+                telemetry.Properties["syncDirection"] = entry.SyncDirection;
+            if (!string.IsNullOrEmpty(entry.HttpMethod))
+                telemetry.Properties["httpMethod"] = entry.HttpMethod;
+            if (!string.IsNullOrEmpty(entry.RequestPath))
+                telemetry.Properties["requestPath"] = entry.RequestPath;
+
+            // Add PII-redacted values if configured
+            if (_options.LogRequestBodies)
+            {
+                if (!string.IsNullOrEmpty(entry.OldValue))
+                    telemetry.Properties["oldValue"] = RedactAndTruncate(entry.OldValue);
+                if (!string.IsNullOrEmpty(entry.NewValue))
+                    telemetry.Properties["newValue"] = RedactAndTruncate(entry.NewValue);
+            }
+
+            // Add error info if present
+            if (!string.IsNullOrEmpty(entry.ErrorCode))
+                telemetry.Properties["errorCode"] = entry.ErrorCode;
+            if (!string.IsNullOrEmpty(entry.ErrorMessage))
+                telemetry.Properties["errorMessage"] = entry.ErrorMessage;
+            if (!string.IsNullOrEmpty(entry.ScimErrorType))
+                telemetry.Properties["scimErrorType"] = entry.ScimErrorType;
+
+            // Add metrics
+            telemetry.Metrics["responseTimeMs"] = entry.ResponseTimeMs;
+
+            _telemetryClient.TrackEvent(telemetry);
+        }
+
+        // Also log to ILogger for local debugging
+        _logger.LogInformation(
+            "Audit: {OperationType} {ResourceType}/{ResourceId} by {ActorId} in tenant {TenantId} - HTTP {HttpStatus} ({ResponseTimeMs}ms)",
+            entry.OperationType,
+            entry.ResourceType,
+            entry.ResourceId,
+            entry.ActorId,
+            entry.TenantId,
+            entry.HttpStatus,
+            entry.ResponseTimeMs);
+
+        return Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public async Task LogOperationAsync(
+        OperationType operationType,
+        string resourceType,
+        string resourceId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs,
+        object? oldValue = null,
+        object? newValue = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = operationType,
+            ResourceType = resourceType,
+            ResourceId = resourceId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            HttpStatus = httpStatus,
+            ResponseTimeMs = responseTimeMs,
+            OldValue = oldValue != null ? SerializeValue(oldValue) : null,
+            NewValue = newValue != null ? SerializeValue(newValue) : null
+        };
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogErrorAsync(
+        OperationType operationType,
+        string resourceType,
+        string? resourceId,
+        string tenantId,
+        string actorId,
+        Exception exception)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = operationType,
+            ResourceType = resourceType,
+            ResourceId = resourceId ?? string.Empty,
+            TenantId = tenantId,
+            ActorId = actorId,
+            HttpStatus = 500,
+            ErrorCode = exception.GetType().Name,
+            ErrorMessage = exception.Message
+        };
+
+        if (exception is Errors.ScimException scimEx)
+        {
+            entry.HttpStatus = (int)scimEx.StatusCode;
+            entry.ScimErrorType = scimEx.ScimType?.ToString();
+        }
+
+        // Log exception to Application Insights
+        _telemetryClient?.TrackException(exception, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["actorId"] = actorId,
+            ["operationType"] = operationType.ToString(),
+            ["resourceType"] = resourceType,
+            ["resourceId"] = resourceId ?? string.Empty
+        });
+
+        await LogAsync(entry);
+    }
+
+    private string GetEventName(OperationType operationType, string resourceType, bool isError)
+    {
+        if (isError)
+            return _options.EventNames.Error;
+
+        return (operationType, resourceType.ToLowerInvariant()) switch
+        {
+            (OperationType.Create, "user") => _options.EventNames.UserCreated,
+            (OperationType.Read, "user") => _options.EventNames.UserRead,
+            (OperationType.Update or OperationType.Patch, "user") => _options.EventNames.UserUpdated,
+            (OperationType.Delete, "user") => _options.EventNames.UserDeleted,
+            (OperationType.List, "user") => _options.EventNames.UserListed,
+            (OperationType.Create, "group") => _options.EventNames.GroupCreated,
+            (OperationType.Read, "group") => _options.EventNames.GroupRead,
+            (OperationType.Update or OperationType.Patch, "group") => _options.EventNames.GroupUpdated,
+            (OperationType.Delete, "group") => _options.EventNames.GroupDeleted,
+            (OperationType.List, "group") => _options.EventNames.GroupListed,
+            (OperationType.AddMember, _) => _options.EventNames.MemberAdded,
+            (OperationType.RemoveMember, _) => _options.EventNames.MemberRemoved,
+            (OperationType.Authenticate, _) when !isError => _options.EventNames.AuthSuccess,
+            (OperationType.Authenticate, _) => _options.EventNames.AuthFailure,
+            (OperationType.Sync, _) => _options.EventNames.SyncStarted,
+            _ => $"SCIM_{operationType}_{resourceType}"
+        };
+    }
+
+    private string SerializeValue(object value)
+    {
+        try
+        {
+            return System.Text.Json.JsonSerializer.Serialize(value);
+        }
+        catch
+        {
+            return value.ToString() ?? string.Empty;
+        }
+    }
+
+    private string RedactAndTruncate(string value)
+    {
+        var redacted = _options.EnablePiiRedaction 
+            ? _piiRedactor.RedactJson(value)
+            : value;
+
+        if (redacted.Length > _options.MaxBodySize)
+        {
+            return redacted[.._options.MaxBodySize] + "...[truncated]";
+        }
+
+        return redacted;
+    }
+}
