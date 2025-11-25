@@ -34,6 +34,52 @@ public interface IBearerTokenValidator
 }
 
 /// <summary>
+/// Token validation error types per RFC 6750.
+/// </summary>
+public enum TokenValidationError
+{
+    /// <summary>
+    /// No error.
+    /// </summary>
+    None,
+
+    /// <summary>
+    /// Token is missing.
+    /// </summary>
+    MissingToken,
+
+    /// <summary>
+    /// Token is invalid or malformed.
+    /// </summary>
+    InvalidToken,
+
+    /// <summary>
+    /// Token signature is invalid.
+    /// </summary>
+    InvalidSignature,
+
+    /// <summary>
+    /// Token has expired.
+    /// </summary>
+    ExpiredToken,
+
+    /// <summary>
+    /// Token audience is invalid.
+    /// </summary>
+    InvalidAudience,
+
+    /// <summary>
+    /// Token issuer is invalid.
+    /// </summary>
+    InvalidIssuer,
+
+    /// <summary>
+    /// Token scope is insufficient.
+    /// </summary>
+    InsufficientScope
+}
+
+/// <summary>
 /// Result of token validation.
 /// </summary>
 public class TokenValidationResult
@@ -49,14 +95,29 @@ public class TokenValidationResult
     public ClaimsPrincipal? Principal { get; set; }
 
     /// <summary>
+    /// Alias for Principal property.
+    /// </summary>
+    public ClaimsPrincipal? ClaimsPrincipal { get => Principal; set => Principal = value; }
+
+    /// <summary>
     /// Extracted claims.
     /// </summary>
     public TokenClaims? Claims { get; set; }
 
     /// <summary>
+    /// Error type if validation failed.
+    /// </summary>
+    public TokenValidationError Error { get; set; } = TokenValidationError.None;
+
+    /// <summary>
     /// Error message if validation failed.
     /// </summary>
     public string? ErrorMessage { get; set; }
+
+    /// <summary>
+    /// Alias for ErrorMessage.
+    /// </summary>
+    public string? ErrorDescription { get => ErrorMessage; set => ErrorMessage = value; }
 
     /// <summary>
     /// Error code if validation failed.
@@ -194,6 +255,18 @@ public class TokenValidationOptions
     /// Required scopes for access.
     /// </summary>
     public List<string> RequiredScopes { get; set; } = [];
+
+    /// <summary>
+    /// Valid audiences for token validation (supports multiple).
+    /// </summary>
+    public List<string> ValidAudiences { get; set; } = [];
+}
+
+/// <summary>
+/// Alias for TokenValidationOptions for backward compatibility.
+/// </summary>
+public class BearerTokenValidatorOptions : TokenValidationOptions
+{
 }
 
 /// <summary>

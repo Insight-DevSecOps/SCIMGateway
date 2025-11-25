@@ -664,11 +664,13 @@ public class FilterParserTests
         // Arrange
         var parser = CreateFilterParser();
         var filter = "userName invalid \"john\"";
+        var exceptionType = GetFilterParseExceptionType();
         
         // Act & Assert
-        if (parser != null)
+        if (parser != null && exceptionType != null)
         {
-            Assert.Throws<FilterParseException>(() => parser.Parse(filter));
+            var exception = Assert.ThrowsAny<Exception>(() => parser.Parse(filter));
+            Assert.IsType(exceptionType, exception);
         }
     }
 
@@ -680,11 +682,13 @@ public class FilterParserTests
         // Arrange
         var parser = CreateFilterParser();
         var filter = "(userName eq \"john\"";
+        var exceptionType = GetFilterParseExceptionType();
         
         // Act & Assert
-        if (parser != null)
+        if (parser != null && exceptionType != null)
         {
-            Assert.Throws<FilterParseException>(() => parser.Parse(filter));
+            var exception = Assert.ThrowsAny<Exception>(() => parser.Parse(filter));
+            Assert.IsType(exceptionType, exception);
         }
     }
 
@@ -723,11 +727,6 @@ public class FilterParserTests
     private interface IFilterParserStub
     {
         object? Parse(string filter);
-    }
-
-    private class FilterParseException : Exception
-    {
-        public FilterParseException(string message) : base(message) { }
     }
 
     #endregion

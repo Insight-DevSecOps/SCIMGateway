@@ -13,6 +13,8 @@
 // ==========================================================================
 
 using Xunit;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SCIMGateway.Tests.Contract;
 
@@ -387,23 +389,119 @@ public class CosmosDbSchemaTests
 
     private static ContainerConfiguration? GetContainerConfiguration(string containerName)
     {
-        // This will be implemented to retrieve actual configuration
-        // For now, return null to fail tests until implementation exists
-        return null;
+        // Use reflection to call the static method in CosmosDbSchema
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
+        
+        var schemaType = coreAssembly?.GetType("SCIMGateway.Core.Data.CosmosDbSchema");
+        if (schemaType == null) return null;
+
+        var method = schemaType.GetMethod("GetContainerConfiguration", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        if (method == null) return null;
+
+        try
+        {
+            var result = method.Invoke(null, new object[] { containerName });
+            if (result == null) return null;
+
+            // Map the result to our local ContainerConfiguration type
+            var resultType = result.GetType();
+            return new ContainerConfiguration
+            {
+                PartitionKeyPath = resultType.GetProperty("PartitionKeyPath")?.GetValue(result) as string,
+                DefaultTimeToLive = resultType.GetProperty("DefaultTimeToLive")?.GetValue(result) as int?,
+                TimeToLivePropertyPath = resultType.GetProperty("TimeToLivePropertyPath")?.GetValue(result) as string,
+                EnablePerItemTtl = (bool)(resultType.GetProperty("EnablePerItemTtl")?.GetValue(result) ?? false)
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static IndexingPolicyConfiguration? GetIndexingPolicy(string containerName)
     {
-        // This will be implemented to retrieve actual indexing policy
-        // For now, return null to fail tests until implementation exists
-        return null;
+        // Use reflection to call the static method in CosmosDbSchema
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
+        
+        var schemaType = coreAssembly?.GetType("SCIMGateway.Core.Data.CosmosDbSchema");
+        if (schemaType == null) return null;
+
+        var method = schemaType.GetMethod("GetIndexingPolicy", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        if (method == null) return null;
+
+        try
+        {
+            var result = method.Invoke(null, new object[] { containerName });
+            if (result == null) return null;
+
+            // Map the result to our local IndexingPolicyConfiguration type
+            var resultType = result.GetType();
+            var includedPaths = resultType.GetProperty("IncludedPaths")?.GetValue(result) as IEnumerable<string>;
+            var excludedPaths = resultType.GetProperty("ExcludedPaths")?.GetValue(result) as IEnumerable<string>;
+            var compositeIndexes = resultType.GetProperty("CompositeIndexes")?.GetValue(result);
+
+            var config = new IndexingPolicyConfiguration
+            {
+                IncludedPaths = includedPaths?.ToList() ?? new List<string>(),
+                ExcludedPaths = excludedPaths?.ToList() ?? new List<string>()
+            };
+
+            // Handle composite indexes (List<List<string>>)
+            if (compositeIndexes is System.Collections.IEnumerable compositeList)
+            {
+                foreach (var composite in compositeList)
+                {
+                    if (composite is IEnumerable<string> paths)
+                    {
+                        config.CompositeIndexes.Add(paths.ToList());
+                    }
+                }
+            }
+
+            return config;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private static UniqueKeyPolicyConfiguration? GetUniqueKeyPolicy(string containerName)
     {
-        // This will be implemented to retrieve actual unique key policy
-        // For now, return null to fail tests until implementation exists
-        return null;
+        // Use reflection to call the static method in CosmosDbSchema
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
+        
+        var schemaType = coreAssembly?.GetType("SCIMGateway.Core.Data.CosmosDbSchema");
+        if (schemaType == null) return null;
+
+        var method = schemaType.GetMethod("GetUniqueKeyPolicy", 
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        if (method == null) return null;
+
+        try
+        {
+            var result = method.Invoke(null, new object[] { containerName });
+            if (result == null) return null;
+
+            // Map the result to our local UniqueKeyPolicyConfiguration type
+            var resultType = result.GetType();
+            var uniqueKeyPaths = resultType.GetProperty("UniqueKeyPaths")?.GetValue(result) as IEnumerable<string>;
+
+            return new UniqueKeyPolicyConfiguration
+            {
+                UniqueKeyPaths = uniqueKeyPaths?.ToList() ?? new List<string>()
+            };
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     #endregion

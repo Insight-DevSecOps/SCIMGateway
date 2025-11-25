@@ -9,6 +9,42 @@ using System.Text.RegularExpressions;
 namespace SCIMGateway.Core.Utilities;
 
 /// <summary>
+/// Redaction mode for PII fields.
+/// </summary>
+public enum RedactionMode
+{
+    /// <summary>No redaction.</summary>
+    None,
+    
+    /// <summary>Partial masking (e.g., j***@example.com).</summary>
+    Partial,
+    
+    /// <summary>Full redaction ([REDACTED]).</summary>
+    Full
+}
+
+/// <summary>
+/// Options for PII redaction.
+/// </summary>
+public class PiiRedactorOptions
+{
+    /// <summary>
+    /// Email redaction mode.
+    /// </summary>
+    public RedactionMode EmailRedactionMode { get; set; } = RedactionMode.Partial;
+
+    /// <summary>
+    /// Phone number redaction mode.
+    /// </summary>
+    public RedactionMode PhoneRedactionMode { get; set; } = RedactionMode.Partial;
+
+    /// <summary>
+    /// Address redaction mode.
+    /// </summary>
+    public RedactionMode AddressRedactionMode { get; set; } = RedactionMode.Full;
+}
+
+/// <summary>
 /// Interface for PII redaction.
 /// </summary>
 public interface IPiiRedactor
@@ -47,6 +83,25 @@ public interface IPiiRedactor
     /// <param name="address">The address.</param>
     /// <returns>Fully redacted address.</returns>
     string RedactAddress(string address);
+
+    /// <summary>
+    /// Redacts PII from a SCIM user object.
+    /// </summary>
+    /// <param name="user">The user object.</param>
+    /// <returns>Object with PII redacted.</returns>
+    object RedactUser(object user);
+
+    /// <summary>
+    /// Redacts PII from any object with PII fields.
+    /// </summary>
+    /// <param name="obj">The object to redact.</param>
+    /// <returns>Object with PII redacted.</returns>
+    object RedactObject(object obj);
+
+    /// <summary>
+    /// Alias for RedactPhone.
+    /// </summary>
+    string RedactPhoneNumber(string phone);
 }
 
 /// <summary>
@@ -176,6 +231,29 @@ public partial class PiiRedactor : IPiiRedactor
             return address;
 
         return RedactedPlaceholder;
+    }
+
+    /// <inheritdoc />
+    public object RedactUser(object user)
+    {
+        if (user == null) return null!;
+        
+        // Serialize, redact JSON, deserialize
+        var json = System.Text.Json.JsonSerializer.Serialize(user);
+        var redactedJson = RedactJson(json);
+        return System.Text.Json.JsonSerializer.Deserialize<object>(redactedJson)!;
+    }
+
+    /// <inheritdoc />
+    public object RedactObject(object obj)
+    {
+        return RedactUser(obj);
+    }
+
+    /// <inheritdoc />
+    public string RedactPhoneNumber(string phone)
+    {
+        return RedactPhone(phone);
     }
 
     private string GetRedactedValue(string fieldName, string value)

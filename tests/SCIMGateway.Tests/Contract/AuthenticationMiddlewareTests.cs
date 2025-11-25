@@ -461,8 +461,9 @@ public class AuthenticationMiddlewareTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Security.AuthenticationResult")
-            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.AuthenticationResult");
+        return coreAssembly?.GetType("SCIMGateway.Core.Authentication.TokenValidationResult")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.AuthenticationResult")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Security.AuthenticationResult");
     }
 
     private static Type? GetTenantContextType()
@@ -470,17 +471,21 @@ public class AuthenticationMiddlewareTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.MultiTenancy.TenantContext")
-            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.TenantContext");
+        return coreAssembly?.GetType("SCIMGateway.Core.Authentication.TenantContext")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.TenantContext")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.MultiTenancy.TenantContext");
     }
 
     private static Type? GetRequestContextType()
     {
+        var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Context.RequestContext")
-            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.RequestContext");
+        return apiAssembly?.GetType("SCIMGateway.Api.Middleware.RequestContext")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.RequestContext")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Context.RequestContext");
     }
 
     private static Type? GetAuthenticationOptionsType()
@@ -488,16 +493,20 @@ public class AuthenticationMiddlewareTests
         var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
         
-        return apiAssembly?.GetType("SCIMGateway.Api.Configuration.AuthenticationOptions")
+        return apiAssembly?.GetType("SCIMGateway.Api.Middleware.AuthenticationOptions")
+            ?? apiAssembly?.GetType("SCIMGateway.Api.Configuration.AuthenticationOptions")
             ?? apiAssembly?.GetType("SCIMGateway.Api.Security.AuthenticationOptions");
     }
 
     private static Type? GetScimErrorResponseType()
     {
+        var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.ScimErrorResponse")
+        return apiAssembly?.GetType("SCIMGateway.Api.Middleware.ScimErrorResponse")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.ScimErrorResponse")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.ScimErrorResponse");
     }
 

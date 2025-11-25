@@ -70,7 +70,21 @@ public class CosmosDbOptions
     public string? AccountEndpoint { get; set; }
 
     /// <summary>
+    /// Alias for AccountEndpoint for backward compatibility.
+    /// </summary>
+    public string Endpoint
+    {
+        get => AccountEndpoint ?? string.Empty;
+        set => AccountEndpoint = value;
+    }
+
+    /// <summary>
     /// Database name for SCIM Gateway data.
     /// </summary>
     public string DatabaseName { get; set; } = "scim-gateway";
+
+    /// <summary>
+    /// Whether to use managed identity for authentication.
+    /// </summary>
+    public bool UseManagedIdentity { get; set; } = true;
 }

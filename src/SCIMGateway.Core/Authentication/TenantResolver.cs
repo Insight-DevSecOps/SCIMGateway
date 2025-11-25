@@ -4,9 +4,41 @@
 // Extracts tenant ID from token and enforces tenant isolation
 // ==========================================================================
 
+using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 
 namespace SCIMGateway.Core.Authentication;
+
+/// <summary>
+/// Type of actor (user or service).
+/// </summary>
+public enum ActorType
+{
+    /// <summary>
+    /// Human user.
+    /// </summary>
+    User,
+
+    /// <summary>
+    /// Service principal.
+    /// </summary>
+    ServicePrincipal,
+
+    /// <summary>
+    /// Application (alias for ServicePrincipal).
+    /// </summary>
+    Application,
+
+    /// <summary>
+    /// Managed identity.
+    /// </summary>
+    ManagedIdentity,
+
+    /// <summary>
+    /// System account.
+    /// </summary>
+    System
+}
 
 /// <summary>
 /// Interface for tenant resolution and isolation.
@@ -19,6 +51,20 @@ public interface ITenantResolver
     /// <param name="claims">Token claims.</param>
     /// <returns>Resolved tenant context.</returns>
     TenantContext ResolveTenant(TokenClaims claims);
+
+    /// <summary>
+    /// Resolves tenant context from a ClaimsPrincipal.
+    /// </summary>
+    /// <param name="principal">The claims principal from token validation.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Resolved tenant context.</returns>
+    Task<TenantContext> ResolveFromTokenAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Gets the current tenant context.
+    /// </summary>
+    /// <returns>Current tenant context or null.</returns>
+    TenantContext? GetCurrentTenant();
 
     /// <summary>
     /// Validates that the requested resource belongs to the current tenant.
@@ -37,6 +83,17 @@ public interface ITenantResolver
 }
 
 /// <summary>
+/// Interface for accessing the current tenant context.
+/// </summary>
+public interface ITenantContextAccessor
+{
+    /// <summary>
+    /// Gets or sets the current tenant context.
+    /// </summary>
+    TenantContext? TenantContext { get; set; }
+}
+
+/// <summary>
 /// Resolved tenant context.
 /// </summary>
 public class TenantContext
@@ -52,6 +109,16 @@ public class TenantContext
     public string ActorId { get; set; } = string.Empty;
 
     /// <summary>
+    /// Type of the actor.
+    /// </summary>
+    public ActorType ActorType { get; set; } = ActorType.User;
+
+    /// <summary>
+    /// Display name of the actor.
+    /// </summary>
+    public string? ActorDisplayName { get; set; }
+
+    /// <summary>
     /// Whether the actor is a service principal.
     /// </summary>
     public bool IsServicePrincipal { get; set; }
@@ -62,14 +129,24 @@ public class TenantContext
     public string? ApplicationId { get; set; }
 
     /// <summary>
+    /// Alias for ApplicationId.
+    /// </summary>
+    public string? AppId { get => ApplicationId; set => ApplicationId = value; }
+
+    /// <summary>
+    /// Adapter ID for the tenant configuration.
+    /// </summary>
+    public string? AdapterId { get; set; }
+
+    /// <summary>
     /// User principal name (for users).
     /// </summary>
     public string? UserPrincipalName { get; set; }
 
     /// <summary>
-    /// Display name of the actor.
+    /// Display name of the actor (alias for ActorDisplayName).
     /// </summary>
-    public string? DisplayName { get; set; }
+    public string? DisplayName { get => ActorDisplayName; set => ActorDisplayName = value; }
 
     /// <summary>
     /// Scopes available to the actor.
@@ -103,6 +180,7 @@ public class TenantContext
 public class TenantResolver : ITenantResolver
 {
     private readonly ILogger<TenantResolver> _logger;
+    private TenantContext? _currentContext;
 
     public TenantResolver(ILogger<TenantResolver> logger)
     {
@@ -117,13 +195,13 @@ public class TenantResolver : ITenantResolver
         if (string.IsNullOrEmpty(claims.TenantId))
         {
             _logger.LogError("Cannot resolve tenant: tid claim is missing");
-            throw new TenantResolutionException("Token is missing required tenant identifier (tid) claim");
+            throw new TenantClaimMissingException("tid");
         }
 
         if (string.IsNullOrEmpty(claims.ObjectId))
         {
             _logger.LogError("Cannot resolve tenant: oid claim is missing");
-            throw new TenantResolutionException("Token is missing required object identifier (oid) claim");
+            throw new TenantClaimMissingException("oid");
         }
 
         var isServicePrincipal = !string.IsNullOrEmpty(claims.ApplicationId) && 
@@ -134,20 +212,70 @@ public class TenantResolver : ITenantResolver
             TenantId = claims.TenantId,
             ActorId = claims.ObjectId,
             IsServicePrincipal = isServicePrincipal,
+            ActorType = isServicePrincipal ? ActorType.ServicePrincipal : ActorType.User,
             ApplicationId = claims.ApplicationId,
             UserPrincipalName = claims.UserPrincipalName,
-            DisplayName = claims.DisplayName,
+            ActorDisplayName = claims.DisplayName,
             Scopes = claims.Scopes,
             Roles = claims.Roles,
             ExpiresAt = claims.ExpiresAt,
             RequestId = Guid.NewGuid().ToString()
         };
 
+        _currentContext = context;
+
         _logger.LogDebug("Resolved tenant context: TenantId={TenantId}, ActorId={ActorId}, IsServicePrincipal={IsServicePrincipal}",
             context.TenantId, context.ActorId, context.IsServicePrincipal);
 
         return context;
     }
+
+    /// <inheritdoc />
+    public async Task<TenantContext> ResolveFromTokenAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(principal);
+
+        var tenantId = principal.FindFirst("tid")?.Value 
+            ?? principal.FindFirst("http://schemas.microsoft.com/identity/claims/tenantid")?.Value;
+        var objectId = principal.FindFirst("oid")?.Value 
+            ?? principal.FindFirst("http://schemas.microsoft.com/identity/claims/objectidentifier")?.Value;
+        var appId = principal.FindFirst("appid")?.Value 
+            ?? principal.FindFirst("azp")?.Value;
+        var upn = principal.FindFirst("upn")?.Value 
+            ?? principal.FindFirst(ClaimTypes.Upn)?.Value;
+        var name = principal.FindFirst("name")?.Value 
+            ?? principal.FindFirst(ClaimTypes.Name)?.Value;
+
+        if (string.IsNullOrEmpty(tenantId))
+        {
+            throw new TenantClaimMissingException("tid");
+        }
+
+        if (string.IsNullOrEmpty(objectId))
+        {
+            throw new TenantClaimMissingException("oid");
+        }
+
+        var isServicePrincipal = !string.IsNullOrEmpty(appId) && objectId == appId;
+
+        var context = new TenantContext
+        {
+            TenantId = tenantId,
+            ActorId = objectId,
+            IsServicePrincipal = isServicePrincipal,
+            ActorType = isServicePrincipal ? ActorType.ServicePrincipal : ActorType.User,
+            ApplicationId = appId,
+            UserPrincipalName = upn,
+            ActorDisplayName = name,
+            RequestId = Guid.NewGuid().ToString()
+        };
+
+        _currentContext = context;
+        return await Task.FromResult(context);
+    }
+
+    /// <inheritdoc />
+    public TenantContext? GetCurrentTenant() => _currentContext;
 
     /// <inheritdoc />
     public bool ValidateTenantAccess(TenantContext tenantContext, string resourceTenantId)
@@ -204,5 +332,45 @@ public class CrossTenantAccessException : Exception
     {
         ActorTenantId = actorTenantId;
         ResourceTenantId = resourceTenantId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when tenant access is denied.
+/// </summary>
+public class TenantAccessDeniedException : Exception
+{
+    /// <summary>
+    /// The tenant ID that was requested.
+    /// </summary>
+    public string RequestedTenantId { get; }
+
+    /// <summary>
+    /// The actual tenant ID of the actor.
+    /// </summary>
+    public string ActualTenantId { get; }
+
+    public TenantAccessDeniedException(string requestedTenantId, string actualTenantId)
+        : base($"Access denied: actor from tenant '{actualTenantId}' cannot access tenant '{requestedTenantId}'")
+    {
+        RequestedTenantId = requestedTenantId;
+        ActualTenantId = actualTenantId;
+    }
+}
+
+/// <summary>
+/// Exception thrown when a required tenant claim is missing from the token.
+/// </summary>
+public class TenantClaimMissingException : Exception
+{
+    /// <summary>
+    /// The name of the missing claim.
+    /// </summary>
+    public string ClaimName { get; }
+
+    public TenantClaimMissingException(string claimName)
+        : base($"Required claim '{claimName}' is missing from the token")
+    {
+        ClaimName = claimName;
     }
 }

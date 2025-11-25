@@ -574,7 +574,8 @@ public class AuditLoggerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Core.AuditLogger")
+        return coreAssembly?.GetType("SCIMGateway.Core.Auditing.AuditLogger")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Core.AuditLogger")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Logging.AuditLogger");
     }
 
@@ -583,7 +584,8 @@ public class AuditLoggerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Core.IAuditLogger")
+        return coreAssembly?.GetType("SCIMGateway.Core.Auditing.IAuditLogger")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Core.IAuditLogger")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Logging.IAuditLogger");
     }
 
@@ -601,7 +603,9 @@ public class AuditLoggerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.AuditOperationType")
+        // Look for OperationType (the actual implementation name)
+        return coreAssembly?.GetType("SCIMGateway.Core.Models.OperationType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.AuditOperationType")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Logging.AuditOperationType");
     }
 
@@ -610,7 +614,10 @@ public class AuditLoggerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.AuditResourceType")
+        // Look for ResourceType or AuditResourceType in Auditing or Models namespace
+        return coreAssembly?.GetType("SCIMGateway.Core.Auditing.AuditResourceType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.AuditResourceType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.ResourceType")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Logging.AuditResourceType");
     }
 

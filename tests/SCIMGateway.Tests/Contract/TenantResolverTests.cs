@@ -414,7 +414,8 @@ public class TenantResolverTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Exceptions.TenantAccessDeniedException")
+        return coreAssembly?.GetType("SCIMGateway.Core.Authentication.TenantAccessDeniedException")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Exceptions.TenantAccessDeniedException")
             ?? coreAssembly?.GetType("SCIMGateway.Core.MultiTenancy.TenantAccessDeniedException");
     }
 
@@ -423,7 +424,8 @@ public class TenantResolverTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Exceptions.TenantClaimMissingException")
+        return coreAssembly?.GetType("SCIMGateway.Core.Authentication.TenantClaimMissingException")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Exceptions.TenantClaimMissingException")
             ?? coreAssembly?.GetType("SCIMGateway.Core.MultiTenancy.TenantClaimMissingException");
     }
 

@@ -14,6 +14,52 @@ using SCIMGateway.Core.Utilities;
 namespace SCIMGateway.Core.Auditing;
 
 /// <summary>
+/// Type of resource being audited.
+/// </summary>
+public enum AuditResourceType
+{
+    /// <summary>
+    /// User resource.
+    /// </summary>
+    User,
+
+    /// <summary>
+    /// Group resource.
+    /// </summary>
+    Group,
+
+    /// <summary>
+    /// Schema resource.
+    /// </summary>
+    Schema,
+
+    /// <summary>
+    /// Resource type definition.
+    /// </summary>
+    ResourceType,
+
+    /// <summary>
+    /// Service provider configuration.
+    /// </summary>
+    ServiceProviderConfig,
+
+    /// <summary>
+    /// Adapter configuration.
+    /// </summary>
+    Adapter,
+
+    /// <summary>
+    /// Transformation rules.
+    /// </summary>
+    TransformationRule,
+
+    /// <summary>
+    /// Audit log entry.
+    /// </summary>
+    AuditLog
+}
+
+/// <summary>
 /// Interface for audit logging.
 /// </summary>
 public interface IAuditLogger
@@ -23,6 +69,70 @@ public interface IAuditLogger
     /// </summary>
     /// <param name="entry">The audit log entry.</param>
     Task LogAsync(AuditLogEntry entry);
+
+    /// <summary>
+    /// Logs a user operation.
+    /// </summary>
+    /// <param name="operation">The operation type.</param>
+    /// <param name="userId">The user ID.</param>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="actorId">The actor ID.</param>
+    /// <param name="httpStatus">HTTP status code.</param>
+    /// <param name="responseTimeMs">Response time in milliseconds.</param>
+    Task LogUserOperationAsync(
+        OperationType operation,
+        string userId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs);
+
+    /// <summary>
+    /// Logs a group operation.
+    /// </summary>
+    /// <param name="operation">The operation type.</param>
+    /// <param name="groupId">The group ID.</param>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="actorId">The actor ID.</param>
+    /// <param name="httpStatus">HTTP status code.</param>
+    /// <param name="responseTimeMs">Response time in milliseconds.</param>
+    Task LogGroupOperationAsync(
+        OperationType operation,
+        string groupId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs);
+
+    /// <summary>
+    /// Logs an authentication event.
+    /// </summary>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="actorId">The actor ID.</param>
+    /// <param name="success">Whether authentication succeeded.</param>
+    /// <param name="errorMessage">Error message if failed.</param>
+    Task LogAuthenticationAsync(
+        string tenantId,
+        string actorId,
+        bool success,
+        string? errorMessage = null);
+
+    /// <summary>
+    /// Logs an adapter operation.
+    /// </summary>
+    /// <param name="adapterId">The adapter ID.</param>
+    /// <param name="operation">The operation type.</param>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="actorId">The actor ID.</param>
+    /// <param name="success">Whether the operation succeeded.</param>
+    /// <param name="errorMessage">Error message if failed.</param>
+    Task LogAdapterOperationAsync(
+        string adapterId,
+        OperationType operation,
+        string tenantId,
+        string actorId,
+        bool success,
+        string? errorMessage = null);
 
     /// <summary>
     /// Logs a CRUD operation.
@@ -63,6 +173,52 @@ public interface IAuditLogger
         string tenantId,
         string actorId,
         Exception exception);
+}
+
+/// <summary>
+/// Interface for audit log storage/repository.
+/// </summary>
+public interface IAuditLogRepository
+{
+    /// <summary>
+    /// Saves an audit log entry.
+    /// </summary>
+    /// <param name="entry">The audit log entry to save.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task SaveAsync(AuditLogEntry entry, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Alias for SaveAsync for backward compatibility.
+    /// </summary>
+    Task AddAsync(AuditLogEntry entry, CancellationToken cancellationToken = default) => SaveAsync(entry, cancellationToken);
+
+    /// <summary>
+    /// Queries audit log entries.
+    /// </summary>
+    /// <param name="tenantId">Tenant to query.</param>
+    /// <param name="filter">Optional filter expression.</param>
+    /// <param name="startTime">Start time for the query range.</param>
+    /// <param name="endTime">End time for the query range.</param>
+    /// <param name="maxResults">Maximum number of results to return.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    Task<IEnumerable<AuditLogEntry>> QueryAsync(
+        string tenantId,
+        string? filter = null,
+        DateTimeOffset? startTime = null,
+        DateTimeOffset? endTime = null,
+        int maxResults = 100,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Alias for QueryAsync for backward compatibility.
+    /// </summary>
+    Task<IEnumerable<AuditLogEntry>> GetAsync(
+        string tenantId,
+        string? filter = null,
+        DateTimeOffset? startTime = null,
+        DateTimeOffset? endTime = null,
+        int maxResults = 100,
+        CancellationToken cancellationToken = default) => QueryAsync(tenantId, filter, startTime, endTime, maxResults, cancellationToken);
 }
 
 /// <summary>
@@ -287,6 +443,75 @@ public class AuditLogger : IAuditLogger
             ["resourceType"] = resourceType,
             ["resourceId"] = resourceId ?? string.Empty
         });
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogUserOperationAsync(
+        OperationType operation,
+        string userId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs)
+    {
+        await LogOperationAsync(operation, "User", userId, tenantId, actorId, httpStatus, responseTimeMs);
+    }
+
+    /// <inheritdoc />
+    public async Task LogGroupOperationAsync(
+        OperationType operation,
+        string groupId,
+        string tenantId,
+        string actorId,
+        int httpStatus,
+        long responseTimeMs)
+    {
+        await LogOperationAsync(operation, "Group", groupId, tenantId, actorId, httpStatus, responseTimeMs);
+    }
+
+    /// <inheritdoc />
+    public async Task LogAuthenticationAsync(
+        string tenantId,
+        string actorId,
+        bool success,
+        string? errorMessage = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Authenticate,
+            ResourceType = "Authentication",
+            ResourceId = string.Empty,
+            TenantId = tenantId,
+            ActorId = actorId,
+            HttpStatus = success ? 200 : 401,
+            ErrorMessage = errorMessage
+        };
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogAdapterOperationAsync(
+        string adapterId,
+        OperationType operation,
+        string tenantId,
+        string actorId,
+        bool success,
+        string? errorMessage = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = operation,
+            ResourceType = "Adapter",
+            ResourceId = adapterId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = adapterId,
+            HttpStatus = success ? 200 : 500,
+            ErrorMessage = errorMessage
+        };
 
         await LogAsync(entry);
     }

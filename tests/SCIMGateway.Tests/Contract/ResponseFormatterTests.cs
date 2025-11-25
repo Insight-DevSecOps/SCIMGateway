@@ -286,7 +286,8 @@ public class ResponseFormatterTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.ScimListResponse")
+        return coreAssembly?.GetType("SCIMGateway.Core.Formatting.ScimListResponse")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.ScimListResponse")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.ScimListResponse");
     }
 

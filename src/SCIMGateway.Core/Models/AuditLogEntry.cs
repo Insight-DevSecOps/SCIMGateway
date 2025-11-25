@@ -59,6 +59,13 @@ public class AuditLogEntry
     public OperationType OperationType { get; set; }
 
     /// <summary>
+    /// Alias for OperationType for backward compatibility.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public OperationType Operation { get => OperationType; set => OperationType = value; }
+
+    /// <summary>
     /// Type of resource (User, Group, etc.).
     /// </summary>
     [JsonPropertyName("resourceType")]
@@ -88,11 +95,39 @@ public class AuditLogEntry
     public int HttpStatus { get; set; }
 
     /// <summary>
+    /// Alias for HttpStatus.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public int StatusCode { get => HttpStatus; set => HttpStatus = value; }
+
+    /// <summary>
+    /// Alias for HttpStatus.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public int HttpStatusCode { get => HttpStatus; set => HttpStatus = value; }
+
+    /// <summary>
     /// Response time in milliseconds.
     /// </summary>
     [JsonPropertyName("responseTimeMs")]
     [JsonProperty("responseTimeMs")]
     public long ResponseTimeMs { get; set; }
+
+    /// <summary>
+    /// Alias for ResponseTimeMs.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public long Duration { get => ResponseTimeMs; set => ResponseTimeMs = value; }
+
+    /// <summary>
+    /// Alias for ResponseTimeMs.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public long DurationMs { get => ResponseTimeMs; set => ResponseTimeMs = value; }
 
     /// <summary>
     /// Unique request ID for correlation.
@@ -165,6 +200,20 @@ public class AuditLogEntry
     [JsonPropertyName("clientIpAddress")]
     [JsonProperty("clientIpAddress")]
     public string? ClientIpAddress { get; set; }
+
+    /// <summary>
+    /// Alias for ClientIpAddress.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? IpAddress { get => ClientIpAddress; set => ClientIpAddress = value; }
+
+    /// <summary>
+    /// Alias for ClientIpAddress.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    [Newtonsoft.Json.JsonIgnore]
+    public string? ClientIp { get => ClientIpAddress; set => ClientIpAddress = value; }
 
     /// <summary>
     /// User agent of the client.

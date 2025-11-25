@@ -528,18 +528,24 @@ public class RequestHandlerTests
     {
         var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return apiAssembly?.GetType("SCIMGateway.Api.Handlers.RequestHandler")
-            ?? apiAssembly?.GetType("SCIMGateway.Api.Scim.RequestHandler");
+            ?? apiAssembly?.GetType("SCIMGateway.Api.Scim.RequestHandler")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Handlers.RequestHandler");
     }
 
     private static Type? GetIRequestHandlerType()
     {
         var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return apiAssembly?.GetType("SCIMGateway.Api.Handlers.IRequestHandler")
-            ?? apiAssembly?.GetType("SCIMGateway.Api.Scim.IRequestHandler");
+            ?? apiAssembly?.GetType("SCIMGateway.Api.Scim.IRequestHandler")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Handlers.IRequestHandler");
     }
 
     private static Type? GetScimRequestType()
@@ -547,7 +553,8 @@ public class RequestHandlerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.ScimRequest")
+        return coreAssembly?.GetType("SCIMGateway.Core.Handlers.ScimRequest")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.ScimRequest")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.ScimRequest");
     }
 
@@ -556,7 +563,8 @@ public class RequestHandlerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.ScimResourceType")
+        return coreAssembly?.GetType("SCIMGateway.Core.Handlers.ScimResourceType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.ScimResourceType")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.ScimResourceType");
     }
 
@@ -574,7 +582,8 @@ public class RequestHandlerTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Models.PatchOperation")
+        return coreAssembly?.GetType("SCIMGateway.Core.Validation.PatchOperation")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.PatchOperation")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.PatchOperation");
     }
 

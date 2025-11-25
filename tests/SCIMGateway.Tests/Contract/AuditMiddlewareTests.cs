@@ -575,6 +575,7 @@ public class AuditMiddlewareTests
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return coreAssembly?.GetType("SCIMGateway.Core.Models.AuditLogEntry")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Auditing.AuditLogEntry")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Audit.AuditLogEntry");
     }
 
@@ -584,6 +585,9 @@ public class AuditMiddlewareTests
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return coreAssembly?.GetType("SCIMGateway.Core.Models.AuditOperationType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.OperationType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Auditing.AuditOperationType")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Auditing.OperationType")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Audit.AuditOperationType");
     }
 
@@ -595,6 +599,8 @@ public class AuditMiddlewareTests
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return apiAssembly?.GetType("SCIMGateway.Api.Configuration.AuditOptions")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Models.AuditOptions")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Auditing.AuditOptions")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Configuration.AuditOptions");
     }
 
@@ -604,6 +610,7 @@ public class AuditMiddlewareTests
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
         return coreAssembly?.GetType("SCIMGateway.Core.Repositories.IAuditLogRepository")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Auditing.IAuditLogRepository")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Audit.IAuditLogRepository");
     }
 

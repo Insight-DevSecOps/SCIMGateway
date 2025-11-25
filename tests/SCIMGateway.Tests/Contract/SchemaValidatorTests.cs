@@ -355,7 +355,8 @@ public class SchemaValidatorTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Constants.ScimSchemaUris")
+        return coreAssembly?.GetType("SCIMGateway.Core.Validation.ScimSchemaUris")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Constants.ScimSchemaUris")
             ?? coreAssembly?.GetType("SCIMGateway.Core.Scim.ScimSchemaUris");
     }
 

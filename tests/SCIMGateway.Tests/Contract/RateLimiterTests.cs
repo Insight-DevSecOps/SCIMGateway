@@ -543,7 +543,8 @@ public class RateLimiterTests
         var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
             .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
         
-        return coreAssembly?.GetType("SCIMGateway.Core.Constants.RateLimitHeaders")
+        return coreAssembly?.GetType("SCIMGateway.Core.Authentication.RateLimitHeaders")
+            ?? coreAssembly?.GetType("SCIMGateway.Core.Constants.RateLimitHeaders")
             ?? coreAssembly?.GetType("SCIMGateway.Core.RateLimiting.RateLimitHeaders");
     }
 

@@ -16,6 +16,46 @@ namespace SCIMGateway.Core.Authentication;
 public interface IRateLimiter
 {
     /// <summary>
+    /// Tries to acquire a token for the given key.
+    /// </summary>
+    /// <param name="key">Rate limit key (tenant ID, actor ID, etc.).</param>
+    /// <returns>Rate limit result.</returns>
+    Task<RateLimitResult> TryAcquireAsync(string key);
+
+    /// <summary>
+    /// Tries to acquire a token synchronously.
+    /// </summary>
+    /// <param name="key">Rate limit key.</param>
+    /// <returns>Rate limit result.</returns>
+    RateLimitResult TryAcquire(string key);
+
+    /// <summary>
+    /// Gets remaining tokens for a key.
+    /// </summary>
+    /// <param name="key">Rate limit key.</param>
+    /// <returns>Number of remaining tokens.</returns>
+    Task<int> GetRemainingTokensAsync(string key);
+
+    /// <summary>
+    /// Gets remaining tokens synchronously.
+    /// </summary>
+    /// <param name="key">Rate limit key.</param>
+    /// <returns>Number of remaining tokens.</returns>
+    int GetRemainingTokens(string key);
+
+    /// <summary>
+    /// Resets rate limit for a key.
+    /// </summary>
+    /// <param name="key">Rate limit key.</param>
+    Task ResetAsync(string key);
+
+    /// <summary>
+    /// Resets rate limit synchronously.
+    /// </summary>
+    /// <param name="key">Rate limit key.</param>
+    void Reset(string key);
+
+    /// <summary>
     /// Checks if the request should be allowed based on rate limits.
     /// </summary>
     /// <param name="tenantId">Tenant identifier.</param>
@@ -29,22 +69,39 @@ public interface IRateLimiter
     /// <param name="tenantId">Tenant identifier.</param>
     /// <param name="actorId">Actor identifier.</param>
     /// <param name="ipAddress">IP address of the request.</param>
+    Task RecordAuthFailureAsync(string tenantId, string? actorId, string? ipAddress);
+
+    /// <summary>
+    /// Records a failed authentication attempt synchronously.
+    /// </summary>
     void RecordAuthFailure(string tenantId, string? actorId, string? ipAddress);
 
     /// <summary>
     /// Checks if the actor is locked out due to failed auth attempts.
     /// </summary>
-    /// <param name="tenantId">Tenant identifier.</param>
-    /// <param name="actorId">Actor identifier.</param>
-    /// <param name="ipAddress">IP address.</param>
-    /// <returns>Lockout status.</returns>
+    /// <param name="key">Rate limit key.</param>
+    /// <returns>True if locked out.</returns>
+    Task<bool> IsLockedOutAsync(string key);
+
+    /// <summary>
+    /// Checks if the actor is locked out synchronously.
+    /// </summary>
+    bool IsLockedOut(string key);
+
+    /// <summary>
+    /// Checks lockout status.
+    /// </summary>
     LockoutStatus CheckLockout(string tenantId, string? actorId, string? ipAddress);
 
     /// <summary>
-    /// Clears lockout for an actor (after successful auth).
+    /// Clears lockout for a key.
     /// </summary>
-    /// <param name="tenantId">Tenant identifier.</param>
-    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="key">Rate limit key.</param>
+    Task ClearLockoutAsync(string key);
+
+    /// <summary>
+    /// Clears lockout synchronously.
+    /// </summary>
     void ClearLockout(string tenantId, string? actorId);
 }
 
@@ -59,9 +116,14 @@ public class RateLimitResult
     public bool IsAllowed { get; set; }
 
     /// <summary>
-    /// Number of remaining requests in the current window.
+    /// Number of remaining tokens in the bucket.
     /// </summary>
-    public int RemainingRequests { get; set; }
+    public int RemainingTokens { get; set; }
+
+    /// <summary>
+    /// Number of remaining requests (alias for RemainingTokens).
+    /// </summary>
+    public int RemainingRequests { get => RemainingTokens; set => RemainingTokens = value; }
 
     /// <summary>
     /// Total request limit per window.
@@ -71,12 +133,22 @@ public class RateLimitResult
     /// <summary>
     /// When the rate limit window resets.
     /// </summary>
-    public DateTime ResetAt { get; set; }
+    public DateTime ResetTime { get; set; }
+
+    /// <summary>
+    /// Alias for ResetTime.
+    /// </summary>
+    public DateTime ResetAt { get => ResetTime; set => ResetTime = value; }
 
     /// <summary>
     /// Seconds until the rate limit resets.
     /// </summary>
-    public int RetryAfterSeconds { get; set; }
+    public int RetryAfter { get; set; }
+
+    /// <summary>
+    /// Alias for RetryAfter.
+    /// </summary>
+    public int RetryAfterSeconds { get => RetryAfter; set => RetryAfter = value; }
 
     /// <summary>
     /// Reason for rate limiting (if not allowed).
@@ -136,9 +208,19 @@ public class RateLimiterOptions
     public int BucketCapacity { get; set; } = 100;
 
     /// <summary>
-    /// Token refill rate per second.
+    /// Tokens added per second (refill rate).
     /// </summary>
-    public double RefillRatePerSecond { get; set; } = 20;
+    public double TokensPerSecond { get; set; } = 20;
+
+    /// <summary>
+    /// Token refill rate per second (alias for TokensPerSecond).
+    /// </summary>
+    public double RefillRatePerSecond { get => TokensPerSecond; set => TokensPerSecond = value; }
+
+    /// <summary>
+    /// Time window for rate limiting.
+    /// </summary>
+    public TimeSpan WindowSize { get; set; } = TimeSpan.FromMinutes(1);
 
     /// <summary>
     /// Maximum failed auth attempts before lockout.
@@ -164,6 +246,54 @@ public class RateLimiterOptions
     /// Maximum requests per minute per actor.
     /// </summary>
     public int MaxRequestsPerActorPerMinute { get; set; } = 200;
+
+    /// <summary>
+    /// Per-tenant limit configurations.
+    /// </summary>
+    public Dictionary<string, TenantRateLimitConfig>? TenantLimits { get; set; }
+}
+
+/// <summary>
+/// Per-tenant rate limit configuration.
+/// </summary>
+public class TenantRateLimitConfig
+{
+    /// <summary>
+    /// Maximum requests per minute for this tenant.
+    /// </summary>
+    public int MaxRequestsPerMinute { get; set; }
+
+    /// <summary>
+    /// Bucket capacity for this tenant.
+    /// </summary>
+    public int BucketCapacity { get; set; }
+}
+
+/// <summary>
+/// Constants for rate limit HTTP headers.
+/// </summary>
+public static class RateLimitHeaders
+{
+    /// <summary>X-RateLimit-Limit header name.</summary>
+    public const string RateLimitLimit = "X-RateLimit-Limit";
+
+    /// <summary>Alias for RateLimitLimit.</summary>
+    public const string Limit = "X-RateLimit-Limit";
+
+    /// <summary>X-RateLimit-Remaining header name.</summary>
+    public const string RateLimitRemaining = "X-RateLimit-Remaining";
+
+    /// <summary>Alias for RateLimitRemaining.</summary>
+    public const string Remaining = "X-RateLimit-Remaining";
+
+    /// <summary>X-RateLimit-Reset header name.</summary>
+    public const string RateLimitReset = "X-RateLimit-Reset";
+
+    /// <summary>Alias for RateLimitReset.</summary>
+    public const string Reset = "X-RateLimit-Reset";
+
+    /// <summary>Retry-After header name.</summary>
+    public const string RetryAfter = "Retry-After";
 }
 
 /// <summary>
@@ -176,11 +306,21 @@ public class RateLimiter : IRateLimiter
     private readonly ConcurrentDictionary<string, TokenBucket> _tenantBuckets = new();
     private readonly ConcurrentDictionary<string, TokenBucket> _actorBuckets = new();
     private readonly ConcurrentDictionary<string, AuthFailureTracker> _authFailures = new();
+    private readonly IRateLimitStore? _distributedStore;
 
     public RateLimiter(IOptions<RateLimiterOptions> options, ILogger<RateLimiter> logger)
     {
         _options = options.Value;
         _logger = logger;
+    }
+
+    /// <summary>
+    /// Constructor with distributed store for multi-instance deployments.
+    /// </summary>
+    public RateLimiter(IOptions<RateLimiterOptions> options, ILogger<RateLimiter> logger, IRateLimitStore distributedStore)
+        : this(options, logger)
+    {
+        _distributedStore = distributedStore;
     }
 
     /// <inheritdoc />
@@ -297,6 +437,81 @@ public class RateLimiter : IRateLimiter
         var key = GetAuthFailureKey(tenantId, actorId, null);
         _authFailures.TryRemove(key, out _);
         _logger.LogInformation("Lockout cleared for {Key}", key);
+    }
+
+    /// <inheritdoc />
+    public async Task<RateLimitResult> TryAcquireAsync(string key)
+    {
+        return await Task.FromResult(TryAcquire(key));
+    }
+
+    /// <inheritdoc />
+    public RateLimitResult TryAcquire(string key)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        return CheckRateLimit(key);
+    }
+
+    /// <inheritdoc />
+    public async Task<int> GetRemainingTokensAsync(string key)
+    {
+        return await Task.FromResult(GetRemainingTokens(key));
+    }
+
+    /// <inheritdoc />
+    public int GetRemainingTokens(string key)
+    {
+        if (_tenantBuckets.TryGetValue(key, out var bucket))
+        {
+            return bucket.GetRemainingTokens();
+        }
+        return _options.BucketCapacity;
+    }
+
+    /// <inheritdoc />
+    public async Task ResetAsync(string key)
+    {
+        await Task.Run(() => Reset(key));
+    }
+
+    /// <inheritdoc />
+    public void Reset(string key)
+    {
+        _tenantBuckets.TryRemove(key, out _);
+        _actorBuckets.TryRemove(key, out _);
+    }
+
+    /// <inheritdoc />
+    public async Task RecordAuthFailureAsync(string tenantId, string? actorId, string? ipAddress)
+    {
+        await Task.Run(() => RecordAuthFailure(tenantId, actorId, ipAddress));
+    }
+
+    /// <inheritdoc />
+    public async Task<bool> IsLockedOutAsync(string key)
+    {
+        return await Task.FromResult(IsLockedOut(key));
+    }
+
+    /// <inheritdoc />
+    public bool IsLockedOut(string key)
+    {
+        if (_authFailures.TryGetValue(key, out var tracker))
+        {
+            tracker.CleanupOldFailures();
+            return tracker.LockUntil.HasValue && tracker.LockUntil > DateTime.UtcNow;
+        }
+        return false;
+    }
+
+    /// <inheritdoc />
+    public async Task ClearLockoutAsync(string key)
+    {
+        await Task.Run(() => 
+        {
+            _authFailures.TryRemove(key, out _);
+            _logger.LogInformation("Lockout cleared for {Key}", key);
+        });
     }
 
     private static string GetAuthFailureKey(string tenantId, string? actorId, string? ipAddress)
@@ -426,4 +641,25 @@ public class RateLimiter : IRateLimiter
             }
         }
     }
+}
+
+/// <summary>
+/// Interface for distributed rate limit storage.
+/// </summary>
+public interface IRateLimitStore
+{
+    /// <summary>
+    /// Gets remaining tokens for a key.
+    /// </summary>
+    Task<int> GetRemainingTokensAsync(string key);
+
+    /// <summary>
+    /// Tries to consume tokens.
+    /// </summary>
+    Task<bool> TryConsumeAsync(string key, int tokens = 1);
+
+    /// <summary>
+    /// Resets tokens for a key.
+    /// </summary>
+    Task ResetAsync(string key);
 }
