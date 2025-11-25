@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SCIMGateway.Api/SCIMGateway.Api.csproj" />
+    <Project Path="src/SCIMGateway.Core/SCIMGateway.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SCIMGateway.Tests/SCIMGateway.Tests.csproj" />
+  </Folder>
+</Solution>

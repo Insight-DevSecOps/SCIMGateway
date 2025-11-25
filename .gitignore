@@ -1,0 +1,77 @@
+# SCIM Gateway - Build Artifacts
+bin/
+obj/
+out/
+publish/
+artifacts/
+
+# .NET specific
+*.user
+*.userosscache
+*.suo
+*.cache
+project.lock.json
+.nuget/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# VS Code (keep .vscode but ignore settings)
+.vscode/*
+!.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+
+# Environment and secrets
+.env
+.env.*
+*.local
+appsettings.*.json
+!appsettings.json
+!appsettings.Development.json
+
+# Test results
+TestResults/
+*.trx
+coverage/
+*.coverage
+*.coveragexml
+
+# Logs
+logs/
+*.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Azure Functions
+local.settings.json
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+
+# Node (if any tooling uses it)
+node_modules/
+npm-debug.log
+
+# Package artifacts
+*.nupkg
+*.snupkg
+
+# User-specific files
+*.rsuser
+*.userprefs
+
+# Backup files
+*~
+*.bak
