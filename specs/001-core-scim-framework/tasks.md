@@ -253,11 +253,11 @@ Additional tests created for T067-T071:
 - [x] T098 [US3] Implement transformation rule validation in TransformationEngine.cs ✅ (required fields, regex syntax, template variable validation, hierarchical level checks, conditional operator validation, warnings for best practices)
 - [x] T099 [US3] Implement transformation rule caching in src/Transformations/TransformationEngine.cs ✅ (in-memory cache with 5-minute refresh already implemented in T091)
 - [x] T100 [US3] Create transformation rule storage in Cosmos DB transformation-rules container ✅ (CosmosTransformationRuleStorage.cs with CRUD operations, query by tenantId/providerId/enabled/priority, batch operations, updated schema indexing)
-- [ ] T101 [US3] Create example transformation rules in src/Transformations/Providers/SalesforceTransform.cs (Salesforce: group→role mapping patterns for Sales_Representative, Sales_Manager, etc.)
-- [ ] T102 [P] [US3] Create example transformation rules in src/Transformations/Providers/WorkdayTransform.cs (Workday: group→org_hierarchy patterns with level extraction)
-- [ ] T103 [P] [US3] Create example transformation rules in src/Transformations/Providers/ServiceNowTransform.cs (ServiceNow: group→group direct mapping, native group support)
-- [ ] T104 [US3] Integrate transformation engine with adapter calls in src/Core/RequestHandler.cs (apply transformations before calling adapter CreateGroupAsync/AddUserToGroupAsync)
-- [ ] T105 [US3] Add transformation operation logging in src/Core/AuditLogger.cs (log rule matches, transformations applied, conflicts detected)
+- [x] T101 [US3] Create example transformation rules in src/SCIMGateway.Core/Models/Transformations/Providers/SalesforceTransformationRules.cs ✅ (15 rules: EXACT for Sales Team/Managers, REGEX for Sales-{Region}, CONDITIONAL for Manager/VP, Permission Sets for API/Reports/Data Export)
+- [x] T102 [P] [US3] Create example transformation rules in src/SCIMGateway.Core/Models/Transformations/Providers/WorkdayTransformationRules.cs ✅ (13 rules: HIERARCHICAL for Company/Division/Department/Team, Region/Country/City, REGEX for CostCenter/Manager, EXACT for HR/Finance/Payroll security groups)
+- [x] T103 [P] [US3] Create example transformation rules in src/SCIMGateway.Core/Models/Transformations/Providers/ServiceNowTransformationRules.cs ✅ (20 rules: EXACT for IT Support/Help Desk/CAB, REGEX for Team/Support-L{N}/App-{App}-Support, EXACT for ITIL/Manager roles, CONDITIONAL for Manager groups)
+- [x] T104 [US3] Integrate transformation engine with adapter calls in src/SCIMGateway.Core/Handlers/TransformationService.cs ✅ (ITransformationService interface, ApplyGroupTransformationAsync, ApplyUserToGroupTransformationAsync, RevokeUserFromGroupTransformationAsync, PreviewTransformationAsync, ReverseTransformAsync)
+- [x] T105 [US3] Add transformation operation logging in src/SCIMGateway.Core/Auditing/AuditLogger.cs ✅ (LogTransformationMatchAsync, LogTransformationApplicationAsync, LogTransformationConflictAsync, LogReverseTransformationAsync, AuditEventNames for transformation events)
 
 ### Tests for User Story 3
 

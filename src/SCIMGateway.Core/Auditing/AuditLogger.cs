@@ -197,6 +197,88 @@ public interface IAuditLogger
         string tenantId,
         string actorId,
         Exception exception);
+
+    // ==================== Transformation Operations (T105) ====================
+
+    /// <summary>
+    /// Logs a transformation rule match.
+    /// T105: Transformation operation logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="groupDisplayName">SCIM group display name that was transformed.</param>
+    /// <param name="matchedRuleIds">IDs of rules that matched.</param>
+    /// <param name="entitlementNames">Names of entitlements that resulted.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    Task LogTransformationMatchAsync(
+        string tenantId,
+        string providerId,
+        string groupDisplayName,
+        IEnumerable<string> matchedRuleIds,
+        IEnumerable<string> entitlementNames,
+        string actorId);
+
+    /// <summary>
+    /// Logs a transformation application (entitlement assigned).
+    /// T105: Transformation operation logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="userId">User who received the entitlement.</param>
+    /// <param name="groupDisplayName">SCIM group display name.</param>
+    /// <param name="entitlementName">Entitlement that was applied.</param>
+    /// <param name="entitlementType">Type of entitlement.</param>
+    /// <param name="success">Whether the application succeeded.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="errorMessage">Error message if failed.</param>
+    Task LogTransformationApplicationAsync(
+        string tenantId,
+        string providerId,
+        string userId,
+        string groupDisplayName,
+        string entitlementName,
+        string entitlementType,
+        bool success,
+        string actorId,
+        string? errorMessage = null);
+
+    /// <summary>
+    /// Logs a transformation conflict detection.
+    /// T105: Transformation operation logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="groupDisplayName">SCIM group display name.</param>
+    /// <param name="conflictingEntitlements">Names of conflicting entitlements.</param>
+    /// <param name="resolutionStrategy">Strategy used to resolve conflict.</param>
+    /// <param name="resolvedEntitlement">Entitlement that was selected (if resolved).</param>
+    /// <param name="actorId">Actor identifier.</param>
+    Task LogTransformationConflictAsync(
+        string tenantId,
+        string providerId,
+        string groupDisplayName,
+        IEnumerable<string> conflictingEntitlements,
+        string resolutionStrategy,
+        string? resolvedEntitlement,
+        string actorId);
+
+    /// <summary>
+    /// Logs a reverse transformation (entitlement to group mapping).
+    /// T105: Transformation operation logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="entitlementId">Provider entitlement ID.</param>
+    /// <param name="entitlementType">Type of entitlement.</param>
+    /// <param name="matchedGroups">SCIM groups that matched.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    Task LogReverseTransformationAsync(
+        string tenantId,
+        string providerId,
+        string entitlementId,
+        string entitlementType,
+        IEnumerable<string> matchedGroups,
+        string actorId);
 }
 
 /// <summary>
@@ -306,6 +388,13 @@ public class AuditEventNames
     public string DriftDetected { get; set; } = "SCIM_DriftDetected";
     public string ConflictDetected { get; set; } = "SCIM_ConflictDetected";
     public string Error { get; set; } = "SCIM_Error";
+    
+    // T105: Transformation event names
+    public string TransformationMatch { get; set; } = "SCIM_TransformationMatch";
+    public string TransformationApplied { get; set; } = "SCIM_TransformationApplied";
+    public string TransformationFailed { get; set; } = "SCIM_TransformationFailed";
+    public string TransformationConflict { get; set; } = "SCIM_TransformationConflict";
+    public string ReverseTransformation { get; set; } = "SCIM_ReverseTransformation";
 }
 
 /// <summary>
@@ -632,5 +721,209 @@ public class AuditLogger : IAuditLogger
         }
 
         return redacted;
+    }
+
+    // ==================== Transformation Operations (T105) ====================
+
+    /// <inheritdoc />
+    public async Task LogTransformationMatchAsync(
+        string tenantId,
+        string providerId,
+        string groupDisplayName,
+        IEnumerable<string> matchedRuleIds,
+        IEnumerable<string> entitlementNames,
+        string actorId)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Transform,
+            ResourceType = "TransformationRule",
+            ResourceId = groupDisplayName,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 200,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["groupDisplayName"] = groupDisplayName,
+                ["matchedRuleIds"] = string.Join(",", matchedRuleIds),
+                ["entitlementNames"] = string.Join(",", entitlementNames),
+                ["eventType"] = "TransformationMatch"
+            }
+        };
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent("SCIM_TransformationMatch", new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["groupDisplayName"] = groupDisplayName,
+            ["matchedRuleCount"] = matchedRuleIds.Count().ToString(),
+            ["entitlementCount"] = entitlementNames.Count().ToString()
+        });
+
+        _logger.LogInformation(
+            "Transformation match: Group {GroupName} matched {RuleCount} rules, producing {EntitlementCount} entitlements for provider {ProviderId}",
+            groupDisplayName, matchedRuleIds.Count(), entitlementNames.Count(), providerId);
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogTransformationApplicationAsync(
+        string tenantId,
+        string providerId,
+        string userId,
+        string groupDisplayName,
+        string entitlementName,
+        string entitlementType,
+        bool success,
+        string actorId,
+        string? errorMessage = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = success ? OperationType.AddMember : OperationType.Transform,
+            ResourceType = "TransformationRule",
+            ResourceId = $"{userId}:{entitlementName}",
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = success ? 200 : 500,
+            ErrorMessage = errorMessage,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["userId"] = userId,
+                ["groupDisplayName"] = groupDisplayName,
+                ["entitlementName"] = entitlementName,
+                ["entitlementType"] = entitlementType,
+                ["success"] = success.ToString(),
+                ["eventType"] = "TransformationApplication"
+            }
+        };
+
+        // Log to Application Insights
+        var eventName = success ? "SCIM_TransformationApplied" : "SCIM_TransformationFailed";
+        _telemetryClient?.TrackEvent(eventName, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["userId"] = userId,
+            ["groupDisplayName"] = groupDisplayName,
+            ["entitlementName"] = entitlementName,
+            ["entitlementType"] = entitlementType
+        });
+
+        if (success)
+        {
+            _logger.LogInformation(
+                "Transformation applied: User {UserId} assigned entitlement {EntitlementName} ({EntitlementType}) via group {GroupName} to provider {ProviderId}",
+                userId, entitlementName, entitlementType, groupDisplayName, providerId);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "Transformation failed: User {UserId} failed to receive entitlement {EntitlementName} ({EntitlementType}) via group {GroupName} to provider {ProviderId}: {Error}",
+                userId, entitlementName, entitlementType, groupDisplayName, providerId, errorMessage);
+        }
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogTransformationConflictAsync(
+        string tenantId,
+        string providerId,
+        string groupDisplayName,
+        IEnumerable<string> conflictingEntitlements,
+        string resolutionStrategy,
+        string? resolvedEntitlement,
+        string actorId)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Transform,
+            ResourceType = "TransformationConflict",
+            ResourceId = groupDisplayName,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 200,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["groupDisplayName"] = groupDisplayName,
+                ["conflictingEntitlements"] = string.Join(",", conflictingEntitlements),
+                ["resolutionStrategy"] = resolutionStrategy,
+                ["resolvedEntitlement"] = resolvedEntitlement ?? "none",
+                ["eventType"] = "TransformationConflict"
+            }
+        };
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent("SCIM_TransformationConflict", new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["groupDisplayName"] = groupDisplayName,
+            ["conflictCount"] = conflictingEntitlements.Count().ToString(),
+            ["resolutionStrategy"] = resolutionStrategy,
+            ["resolved"] = (!string.IsNullOrEmpty(resolvedEntitlement)).ToString()
+        });
+
+        _logger.LogWarning(
+            "Transformation conflict: Group {GroupName} matched {ConflictCount} conflicting entitlements [{Entitlements}], resolved with {Strategy} to {Resolved}",
+            groupDisplayName, conflictingEntitlements.Count(), string.Join(", ", conflictingEntitlements),
+            resolutionStrategy, resolvedEntitlement ?? "none");
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogReverseTransformationAsync(
+        string tenantId,
+        string providerId,
+        string entitlementId,
+        string entitlementType,
+        IEnumerable<string> matchedGroups,
+        string actorId)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Transform,
+            ResourceType = "ReverseTransformation",
+            ResourceId = entitlementId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 200,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["entitlementId"] = entitlementId,
+                ["entitlementType"] = entitlementType,
+                ["matchedGroups"] = string.Join(",", matchedGroups),
+                ["matchCount"] = matchedGroups.Count().ToString(),
+                ["eventType"] = "ReverseTransformation"
+            }
+        };
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent("SCIM_ReverseTransformation", new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["entitlementId"] = entitlementId,
+            ["entitlementType"] = entitlementType,
+            ["matchCount"] = matchedGroups.Count().ToString()
+        });
+
+        _logger.LogInformation(
+            "Reverse transformation: Entitlement {EntitlementId} ({EntitlementType}) from provider {ProviderId} mapped to {MatchCount} groups [{Groups}]",
+            entitlementId, entitlementType, providerId, matchedGroups.Count(), string.Join(", ", matchedGroups));
+
+        await LogAsync(entry);
     }
 }
