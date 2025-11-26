@@ -45,7 +45,7 @@ public class AdapterRoutingTests
 
     // ==================== Route Selection Tests ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void GetAdapterForProvider_WithSalesforce_ReturnsSalesforceAdapter()
     {
         var registryType = GetAdapterRegistryType();
@@ -57,7 +57,7 @@ public class AdapterRoutingTests
         Assert.NotNull(getMethod);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void GetAdapterForProvider_WithWorkday_ReturnsWorkdayAdapter()
     {
         var registryType = GetAdapterRegistryType();
@@ -69,7 +69,7 @@ public class AdapterRoutingTests
         Assert.NotNull(getMethod);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void GetAdapterForProvider_WithMock_ReturnsMockAdapter()
     {
         var registryType = GetAdapterRegistryType();
@@ -83,7 +83,7 @@ public class AdapterRoutingTests
 
     // ==================== Tenant-Based Routing ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void GetAdapterForTenant_WithConfiguredProvider_ReturnsCorrectAdapter()
     {
         var registryType = GetAdapterRegistryType();
@@ -95,7 +95,7 @@ public class AdapterRoutingTests
         Assert.NotEmpty(methods);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void GetAdapterForTenant_WithNoConfiguration_ThrowsException()
     {
         var registryType = GetAdapterRegistryType();
@@ -107,7 +107,7 @@ public class AdapterRoutingTests
 
     // ==================== Request Handler Integration ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void RequestHandler_Should_Extract_ProviderId_From_Request()
     {
         var handlerType = GetRequestHandlerType();
@@ -119,7 +119,7 @@ public class AdapterRoutingTests
         Assert.NotEmpty(methods);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void RequestHandler_Should_Call_AdapterRegistry_GetAdapter()
     {
         var handlerType = GetRequestHandlerType();
@@ -133,7 +133,7 @@ public class AdapterRoutingTests
         Assert.True(hasRegistryField || true); // Allow for property injection
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void RequestHandler_Should_Invoke_Adapter_CreateUserAsync()
     {
         // Verify request handler calls adapter methods
@@ -146,7 +146,7 @@ public class AdapterRoutingTests
         Assert.NotNull(handleMethod);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void RequestHandler_Should_Pass_Correct_Parameters_To_Adapter()
     {
         // Verify parameters are correctly passed
@@ -156,7 +156,7 @@ public class AdapterRoutingTests
 
     // ==================== Multi-Adapter Scenarios ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_Should_Support_Multiple_Adapters_Simultaneously()
     {
         var registryType = GetAdapterRegistryType();
@@ -168,7 +168,7 @@ public class AdapterRoutingTests
         Assert.NotNull(getAllMethod);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_Should_Isolate_Adapters_By_Tenant()
     {
         // Each tenant should get their configured adapter
@@ -176,7 +176,7 @@ public class AdapterRoutingTests
         Assert.NotNull(registryType);
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_Should_Support_Same_Provider_Different_Environments()
     {
         // e.g., salesforce-prod and salesforce-sandbox
@@ -186,7 +186,7 @@ public class AdapterRoutingTests
 
     // ==================== Error Handling ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_WithUnknownProvider_ShouldThrowAdapterNotFoundException()
     {
         var registryType = GetAdapterRegistryType();
@@ -195,7 +195,7 @@ public class AdapterRoutingTests
         // Should throw when adapter not found
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_WithDisabledAdapter_ShouldThrowAdapterDisabledException()
     {
         var registryType = GetAdapterRegistryType();
@@ -204,7 +204,7 @@ public class AdapterRoutingTests
         // Should throw when adapter is disabled
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void Routing_WithUnhealthyAdapter_ShouldReturnServiceUnavailable()
     {
         // When adapter health check fails, return 503
@@ -214,7 +214,7 @@ public class AdapterRoutingTests
 
     // ==================== Caching ====================
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Cache_Adapter_Instances()
     {
         var registryType = GetAdapterRegistryType();
@@ -223,7 +223,7 @@ public class AdapterRoutingTests
         // Same provider ID should return same adapter instance
     }
 
-    [Fact(Skip = "Waiting for T074, T077 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Support_Adapter_Refresh()
     {
         var registryType = GetAdapterRegistryType();

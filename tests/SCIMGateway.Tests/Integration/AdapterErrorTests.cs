@@ -20,10 +20,19 @@ public class AdapterErrorTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        // Prefer the class over the interface
         foreach (var assembly in assemblies)
         {
             var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == "ErrorHandler" || t.Name == "IErrorHandler");
+                .FirstOrDefault(t => t.Name == "ErrorHandler" && !t.IsInterface);
+            if (type != null) return type;
+        }
+        
+        // Fall back to interface if class not found
+        foreach (var assembly in assemblies)
+        {
+            var type = assembly.GetTypes()
+                .FirstOrDefault(t => t.Name == "IErrorHandler");
             if (type != null) return type;
         }
         return null;
@@ -59,7 +68,7 @@ public class AdapterErrorTests
 
     // ==================== Error Translation Tests ====================
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithInvalidSyntax_Returns400BadRequest()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -70,7 +79,7 @@ public class AdapterErrorTests
         Assert.NotNull(translateMethod);
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithUniqueness_Returns409Conflict()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -79,7 +88,7 @@ public class AdapterErrorTests
         // Uniqueness error should map to 409 Conflict
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithResourceNotFound_Returns404NotFound()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -88,7 +97,7 @@ public class AdapterErrorTests
         // ResourceNotFound should map to 404 Not Found
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithUnauthorized_Returns401Unauthorized()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -97,7 +106,7 @@ public class AdapterErrorTests
         // Unauthorized should map to 401 Unauthorized
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithForbidden_Returns403Forbidden()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -106,7 +115,7 @@ public class AdapterErrorTests
         // Forbidden should map to 403 Forbidden
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithServerUnavailable_Returns503ServiceUnavailable()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -115,7 +124,7 @@ public class AdapterErrorTests
         // ServerUnavailable should map to 503 Service Unavailable
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithTooMany_Returns429TooManyRequests()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -124,7 +133,7 @@ public class AdapterErrorTests
         // TooMany should map to 429 Too Many Requests
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithMutability_Returns400BadRequest()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -133,7 +142,7 @@ public class AdapterErrorTests
         // Mutability error should map to 400 Bad Request
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithInvalidFilter_Returns400BadRequest()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -142,7 +151,7 @@ public class AdapterErrorTests
         // InvalidFilter should map to 400 Bad Request
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithNoTarget_Returns400BadRequest()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -153,7 +162,7 @@ public class AdapterErrorTests
 
     // ==================== SCIM Error Response Format ====================
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_ReturnsValidScimErrorResponse()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -166,7 +175,7 @@ public class AdapterErrorTests
         // - detail: error message
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_PreservesProviderErrorContext()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -177,7 +186,7 @@ public class AdapterErrorTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_IncludesRetryAfterHeader_WhenAvailable()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -190,7 +199,7 @@ public class AdapterErrorTests
 
     // ==================== Audit Logging ====================
 
-    [Fact(Skip = "Waiting for T072, T078, T079 implementation")]
+    [Fact]
     public void AdapterError_IsLoggedToAudit()
     {
         var auditLoggerType = GetAuditLoggerType();
@@ -203,7 +212,7 @@ public class AdapterErrorTests
         Assert.NotEmpty(logMethods);
     }
 
-    [Fact(Skip = "Waiting for T072, T078, T079 implementation")]
+    [Fact]
     public void AdapterError_CapturesAdapterId()
     {
         var auditLoggerType = GetAuditLoggerType();
@@ -212,7 +221,7 @@ public class AdapterErrorTests
         // Error logs should include adapter ID for traceability
     }
 
-    [Fact(Skip = "Waiting for T072, T078, T079 implementation")]
+    [Fact]
     public void AdapterError_CapturesOperationType()
     {
         var auditLoggerType = GetAuditLoggerType();
@@ -221,7 +230,7 @@ public class AdapterErrorTests
         // Error logs should include what operation was attempted
     }
 
-    [Fact(Skip = "Waiting for T072, T078, T079 implementation")]
+    [Fact]
     public void AdapterError_CapturesProviderErrorCode()
     {
         var auditLoggerType = GetAuditLoggerType();
@@ -230,7 +239,7 @@ public class AdapterErrorTests
         // Error logs should include provider-specific error code
     }
 
-    [Fact(Skip = "Waiting for T072, T078, T079 implementation")]
+    [Fact]
     public void AdapterError_RedactsSensitiveData()
     {
         // Error logs should not include sensitive data like credentials
@@ -240,7 +249,7 @@ public class AdapterErrorTests
 
     // ==================== Retry Behavior ====================
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void RetryableError_SetsIsRetryableTrue()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -251,7 +260,7 @@ public class AdapterErrorTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void NonRetryableError_SetsIsRetryableFalse()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -260,7 +269,7 @@ public class AdapterErrorTests
         // Uniqueness, InvalidSyntax, etc. should not be retryable
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void RateLimitError_SetsRetryAfterSeconds()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -273,7 +282,7 @@ public class AdapterErrorTests
 
     // ==================== Provider Context ====================
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void AdapterException_IncludesProviderName()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -284,7 +293,7 @@ public class AdapterErrorTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void AdapterException_IncludesHttpStatusCode()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -294,7 +303,7 @@ public class AdapterErrorTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void AdapterException_IncludesInnerException()
     {
         var adapterExceptionType = GetAdapterExceptionType();
@@ -306,7 +315,7 @@ public class AdapterErrorTests
 
     // ==================== Edge Cases ====================
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithNullException_ReturnsGenericError()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -315,7 +324,7 @@ public class AdapterErrorTests
         // Should handle null gracefully
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithUnknownExceptionType_ReturnsInternalServerError()
     {
         var errorHandlerType = GetErrorHandlerType();
@@ -324,7 +333,7 @@ public class AdapterErrorTests
         // Non-AdapterException should map to 500 Internal Server Error
     }
 
-    [Fact(Skip = "Waiting for T072, T078 implementation")]
+    [Fact]
     public void TranslateError_WithAggregateException_UnwrapsInnerException()
     {
         var errorHandlerType = GetErrorHandlerType();

@@ -45,14 +45,14 @@ public class MockAdapterTests
 
     // ==================== MockAdapter Existence ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public void MockAdapter_Should_Exist()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public void MockAdapter_Should_Implement_IAdapter()
     {
         var adapterType = GetMockAdapterType();
@@ -65,7 +65,7 @@ public class MockAdapterTests
 
     // ==================== User CRUD Operations ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task CreateUserAsync_WithValidUser_ReturnsCreatedUser()
     {
         var adapterType = GetMockAdapterType();
@@ -92,7 +92,7 @@ public class MockAdapterTests
         Assert.NotNull(result);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task GetUserAsync_WithExistingId_ReturnsUser()
     {
         var adapterType = GetMockAdapterType();
@@ -113,23 +113,35 @@ public class MockAdapterTests
         // Result could be null if user doesn't exist, which is valid
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task UpdateUserAsync_WithValidUser_ReturnsUpdatedUser()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
 
         var adapter = CreateMockAdapter(adapterType);
+        var createMethod = adapterType.GetMethod("CreateUserAsync");
         var updateMethod = adapterType.GetMethod("UpdateUserAsync");
+        Assert.NotNull(createMethod);
         Assert.NotNull(updateMethod);
 
         var userType = GetTypeByName("ScimUser");
         Assert.NotNull(userType);
 
-        var user = Activator.CreateInstance(userType);
-        SetProperty(user!, "UserName", "updated@example.com");
+        // First create a user
+        var createUser = Activator.CreateInstance(userType);
+        SetProperty(createUser!, "UserName", "original@example.com");
+        var createTask = (Task)createMethod.Invoke(adapter, new object[] { createUser!, CancellationToken.None })!;
+        await createTask;
+        var createdResult = createTask.GetType().GetProperty("Result")?.GetValue(createTask);
+        var createdId = createdResult?.GetType().GetProperty("Id")?.GetValue(createdResult)?.ToString();
+        Assert.NotNull(createdId);
 
-        var task = (Task)updateMethod.Invoke(adapter, new object[] { "user-id", user!, CancellationToken.None })!;
+        // Now update the user
+        var updateUser = Activator.CreateInstance(userType);
+        SetProperty(updateUser!, "UserName", "updated@example.com");
+
+        var task = (Task)updateMethod.Invoke(adapter, new object[] { createdId, updateUser!, CancellationToken.None })!;
         await task;
 
         var resultProperty = task.GetType().GetProperty("Result");
@@ -137,21 +149,36 @@ public class MockAdapterTests
         Assert.NotNull(result);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task DeleteUserAsync_WithExistingId_CompletesSuccessfully()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
 
         var adapter = CreateMockAdapter(adapterType);
+        var createMethod = adapterType.GetMethod("CreateUserAsync");
         var deleteMethod = adapterType.GetMethod("DeleteUserAsync");
+        Assert.NotNull(createMethod);
         Assert.NotNull(deleteMethod);
 
-        var task = (Task)deleteMethod.Invoke(adapter, new object[] { "user-id", CancellationToken.None })!;
+        var userType = GetTypeByName("ScimUser");
+        Assert.NotNull(userType);
+
+        // First create a user
+        var user = Activator.CreateInstance(userType);
+        SetProperty(user!, "UserName", "todelete@example.com");
+        var createTask = (Task)createMethod.Invoke(adapter, new object[] { user!, CancellationToken.None })!;
+        await createTask;
+        var createdResult = createTask.GetType().GetProperty("Result")?.GetValue(createTask);
+        var createdId = createdResult?.GetType().GetProperty("Id")?.GetValue(createdResult)?.ToString();
+        Assert.NotNull(createdId);
+
+        // Now delete the user
+        var task = (Task)deleteMethod.Invoke(adapter, new object[] { createdId, CancellationToken.None })!;
         await task; // Should complete without throwing
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task ListUsersAsync_ReturnsPagedResult()
     {
         var adapterType = GetMockAdapterType();
@@ -175,7 +202,7 @@ public class MockAdapterTests
 
     // ==================== Group CRUD Operations ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task CreateGroupAsync_WithValidGroup_ReturnsCreatedGroup()
     {
         var adapterType = GetMockAdapterType();
@@ -199,7 +226,7 @@ public class MockAdapterTests
         Assert.NotNull(result);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task GetGroupAsync_WithExistingId_ReturnsGroup()
     {
         var adapterType = GetMockAdapterType();
@@ -213,7 +240,7 @@ public class MockAdapterTests
         await task;
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task ListGroupsAsync_ReturnsPagedResult()
     {
         var adapterType = GetMockAdapterType();
@@ -237,45 +264,138 @@ public class MockAdapterTests
 
     // ==================== Membership Operations ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task AddUserToGroupAsync_CompletesSuccessfully()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
 
         var adapter = CreateMockAdapter(adapterType);
+        var createUserMethod = adapterType.GetMethod("CreateUserAsync");
+        var createGroupMethod = adapterType.GetMethod("CreateGroupAsync");
         var addMethod = adapterType.GetMethod("AddUserToGroupAsync");
+        Assert.NotNull(createUserMethod);
+        Assert.NotNull(createGroupMethod);
         Assert.NotNull(addMethod);
 
-        var task = (Task)addMethod.Invoke(adapter, new object[] { "group-id", "user-id", CancellationToken.None })!;
+        // Create a user
+        var userType = GetTypeByName("ScimUser");
+        Assert.NotNull(userType);
+        var user = Activator.CreateInstance(userType);
+        SetProperty(user!, "UserName", "member@example.com");
+        var userTask = (Task)createUserMethod.Invoke(adapter, new object[] { user!, CancellationToken.None })!;
+        await userTask;
+        var userResult = userTask.GetType().GetProperty("Result")?.GetValue(userTask);
+        var userId = userResult?.GetType().GetProperty("Id")?.GetValue(userResult)?.ToString();
+        Assert.NotNull(userId);
+
+        // Create a group
+        var groupType = GetTypeByName("ScimGroup");
+        Assert.NotNull(groupType);
+        var group = Activator.CreateInstance(groupType);
+        SetProperty(group!, "DisplayName", "Test Membership Group");
+        var groupTask = (Task)createGroupMethod.Invoke(adapter, new object[] { group!, CancellationToken.None })!;
+        await groupTask;
+        var groupResult = groupTask.GetType().GetProperty("Result")?.GetValue(groupTask);
+        var groupId = groupResult?.GetType().GetProperty("Id")?.GetValue(groupResult)?.ToString();
+        Assert.NotNull(groupId);
+
+        // Add user to group
+        var task = (Task)addMethod.Invoke(adapter, new object[] { groupId, userId, CancellationToken.None })!;
         await task;
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task RemoveUserFromGroupAsync_CompletesSuccessfully()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
 
         var adapter = CreateMockAdapter(adapterType);
+        var createUserMethod = adapterType.GetMethod("CreateUserAsync");
+        var createGroupMethod = adapterType.GetMethod("CreateGroupAsync");
+        var addMethod = adapterType.GetMethod("AddUserToGroupAsync");
         var removeMethod = adapterType.GetMethod("RemoveUserFromGroupAsync");
+        Assert.NotNull(createUserMethod);
+        Assert.NotNull(createGroupMethod);
+        Assert.NotNull(addMethod);
         Assert.NotNull(removeMethod);
 
-        var task = (Task)removeMethod.Invoke(adapter, new object[] { "group-id", "user-id", CancellationToken.None })!;
+        // Create a user
+        var userType = GetTypeByName("ScimUser");
+        Assert.NotNull(userType);
+        var user = Activator.CreateInstance(userType);
+        SetProperty(user!, "UserName", "toremove@example.com");
+        var userTask = (Task)createUserMethod.Invoke(adapter, new object[] { user!, CancellationToken.None })!;
+        await userTask;
+        var userResult = userTask.GetType().GetProperty("Result")?.GetValue(userTask);
+        var userId = userResult?.GetType().GetProperty("Id")?.GetValue(userResult)?.ToString();
+        Assert.NotNull(userId);
+
+        // Create a group
+        var groupType = GetTypeByName("ScimGroup");
+        Assert.NotNull(groupType);
+        var group = Activator.CreateInstance(groupType);
+        SetProperty(group!, "DisplayName", "Remove Member Group");
+        var groupTask = (Task)createGroupMethod.Invoke(adapter, new object[] { group!, CancellationToken.None })!;
+        await groupTask;
+        var groupResult = groupTask.GetType().GetProperty("Result")?.GetValue(groupTask);
+        var groupId = groupResult?.GetType().GetProperty("Id")?.GetValue(groupResult)?.ToString();
+        Assert.NotNull(groupId);
+
+        // Add user to group first
+        var addTask = (Task)addMethod.Invoke(adapter, new object[] { groupId, userId, CancellationToken.None })!;
+        await addTask;
+
+        // Remove user from group
+        var task = (Task)removeMethod.Invoke(adapter, new object[] { groupId, userId, CancellationToken.None })!;
         await task;
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task GetGroupMembersAsync_ReturnsUserIds()
     {
         var adapterType = GetMockAdapterType();
         Assert.NotNull(adapterType);
 
         var adapter = CreateMockAdapter(adapterType);
+        var createUserMethod = adapterType.GetMethod("CreateUserAsync");
+        var createGroupMethod = adapterType.GetMethod("CreateGroupAsync");
+        var addMethod = adapterType.GetMethod("AddUserToGroupAsync");
         var getMembersMethod = adapterType.GetMethod("GetGroupMembersAsync");
+        Assert.NotNull(createUserMethod);
+        Assert.NotNull(createGroupMethod);
+        Assert.NotNull(addMethod);
         Assert.NotNull(getMembersMethod);
 
-        var task = (Task)getMembersMethod.Invoke(adapter, new object[] { "group-id", CancellationToken.None })!;
+        // Create a user
+        var userType = GetTypeByName("ScimUser");
+        Assert.NotNull(userType);
+        var user = Activator.CreateInstance(userType);
+        SetProperty(user!, "UserName", "groupmember@example.com");
+        var userTask = (Task)createUserMethod.Invoke(adapter, new object[] { user!, CancellationToken.None })!;
+        await userTask;
+        var userResult = userTask.GetType().GetProperty("Result")?.GetValue(userTask);
+        var userId = userResult?.GetType().GetProperty("Id")?.GetValue(userResult)?.ToString();
+        Assert.NotNull(userId);
+
+        // Create a group
+        var groupType = GetTypeByName("ScimGroup");
+        Assert.NotNull(groupType);
+        var group = Activator.CreateInstance(groupType);
+        SetProperty(group!, "DisplayName", "Members Test Group");
+        var groupTask = (Task)createGroupMethod.Invoke(adapter, new object[] { group!, CancellationToken.None })!;
+        await groupTask;
+        var groupResult = groupTask.GetType().GetProperty("Result")?.GetValue(groupTask);
+        var groupId = groupResult?.GetType().GetProperty("Id")?.GetValue(groupResult)?.ToString();
+        Assert.NotNull(groupId);
+
+        // Add user to group
+        var addTask = (Task)addMethod.Invoke(adapter, new object[] { groupId, userId, CancellationToken.None })!;
+        await addTask;
+
+        // Get members
+        var task = (Task)getMembersMethod.Invoke(adapter, new object[] { groupId, CancellationToken.None })!;
         await task;
 
         var resultProperty = task.GetType().GetProperty("Result");
@@ -285,7 +405,7 @@ public class MockAdapterTests
 
     // ==================== Health Check ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task CheckHealthAsync_ReturnsHealthyStatus()
     {
         var adapterType = GetMockAdapterType();
@@ -307,7 +427,7 @@ public class MockAdapterTests
         Assert.NotNull(statusProperty);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public void GetCapabilities_ReturnsValidCapabilities()
     {
         var adapterType = GetMockAdapterType();
@@ -328,7 +448,7 @@ public class MockAdapterTests
 
     // ==================== Error Handling ====================
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task GetUserAsync_WithNonExistentId_ReturnsNull()
     {
         var adapterType = GetMockAdapterType();
@@ -346,7 +466,7 @@ public class MockAdapterTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = "Waiting for T076 implementation")]
+    [Fact]
     public async Task CreateUserAsync_WithDuplicateUserName_ThrowsAdapterException()
     {
         var adapterType = GetMockAdapterType();

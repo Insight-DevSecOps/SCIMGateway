@@ -135,6 +135,30 @@ public interface IAuditLogger
         string? errorMessage = null);
 
     /// <summary>
+    /// Logs an adapter error with full context.
+    /// T079: Adapter operation logging.
+    /// </summary>
+    /// <param name="adapterId">The adapter ID.</param>
+    /// <param name="operation">The operation type.</param>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="actorId">The actor ID.</param>
+    /// <param name="resourceType">The resource type being operated on.</param>
+    /// <param name="resourceId">The resource ID being operated on.</param>
+    /// <param name="providerErrorCode">The provider-specific error code.</param>
+    /// <param name="errorMessage">The error message.</param>
+    /// <param name="httpStatusCode">The HTTP status code from the provider.</param>
+    Task LogAdapterErrorAsync(
+        string adapterId,
+        OperationType operation,
+        string tenantId,
+        string actorId,
+        string? resourceType,
+        string? resourceId,
+        string? providerErrorCode,
+        string errorMessage,
+        int? httpStatusCode = null);
+
+    /// <summary>
     /// Logs a CRUD operation.
     /// </summary>
     /// <param name="operationType">Type of operation.</param>
@@ -512,6 +536,48 @@ public class AuditLogger : IAuditLogger
             HttpStatus = success ? 200 : 500,
             ErrorMessage = errorMessage
         };
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogAdapterErrorAsync(
+        string adapterId,
+        OperationType operation,
+        string tenantId,
+        string actorId,
+        string? resourceType,
+        string? resourceId,
+        string? providerErrorCode,
+        string errorMessage,
+        int? httpStatusCode = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = operation,
+            ResourceType = resourceType ?? "Unknown",
+            ResourceId = resourceId ?? string.Empty,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = adapterId,
+            HttpStatus = httpStatusCode ?? 500,
+            ErrorCode = providerErrorCode,
+            ErrorMessage = errorMessage
+        };
+
+        // Log to Application Insights as an exception event
+        _telemetryClient?.TrackEvent("AdapterError", new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["actorId"] = actorId,
+            ["adapterId"] = adapterId,
+            ["operationType"] = operation.ToString(),
+            ["resourceType"] = resourceType ?? "Unknown",
+            ["resourceId"] = resourceId ?? string.Empty,
+            ["providerErrorCode"] = providerErrorCode ?? string.Empty,
+            ["errorMessage"] = errorMessage,
+            ["httpStatusCode"] = (httpStatusCode ?? 500).ToString()
+        });
 
         await LogAsync(entry);
     }

@@ -45,14 +45,14 @@ public class AdapterRegistryTests
 
     // ==================== Registry Existence ====================
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Exist()
     {
         var registryType = GetAdapterRegistryType();
         Assert.NotNull(registryType);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void IAdapterRegistry_Interface_Should_Exist()
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
@@ -70,7 +70,7 @@ public class AdapterRegistryTests
 
     // ==================== Registration Methods ====================
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_RegisterAdapter_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -81,7 +81,7 @@ public class AdapterRegistryTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_GetAdapter_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -92,7 +92,7 @@ public class AdapterRegistryTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_TryGetAdapter_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -103,7 +103,7 @@ public class AdapterRegistryTests
         Assert.Equal(typeof(bool), method.ReturnType);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_UnregisterAdapter_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -115,7 +115,7 @@ public class AdapterRegistryTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_GetAllAdapters_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -129,7 +129,7 @@ public class AdapterRegistryTests
 
     // ==================== Routing Methods ====================
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_GetAdapterForTenant_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -141,7 +141,7 @@ public class AdapterRegistryTests
         Assert.NotEmpty(methods);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Have_IsAdapterRegistered_Method()
     {
         var registryType = GetAdapterRegistryType();
@@ -156,7 +156,7 @@ public class AdapterRegistryTests
 
     // ==================== Functional Tests ====================
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void RegisterAdapter_WithValidAdapter_ShouldSucceed()
     {
         var registryType = GetAdapterRegistryImplementationType();
@@ -172,7 +172,7 @@ public class AdapterRegistryTests
         Assert.NotNull(registerMethod);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void GetAdapter_WithUnknownProviderId_ShouldThrowOrReturnNull()
     {
         var registryType = GetAdapterRegistryImplementationType();
@@ -191,7 +191,7 @@ public class AdapterRegistryTests
         }
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void RegisterMultipleAdapters_ShouldMaintainSeparateInstances()
     {
         // Test that registry can hold multiple adapters for different providers
@@ -206,7 +206,7 @@ public class AdapterRegistryTests
         Assert.NotNull(getAllMethod);
     }
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void UnregisterAdapter_ShouldRemoveFromRegistry()
     {
         var registryType = GetAdapterRegistryImplementationType();
@@ -220,7 +220,7 @@ public class AdapterRegistryTests
 
     // ==================== Thread Safety ====================
 
-    [Fact(Skip = "Waiting for T074 implementation")]
+    [Fact]
     public void AdapterRegistry_Should_Be_ThreadSafe()
     {
         // Registry should handle concurrent registration/retrieval

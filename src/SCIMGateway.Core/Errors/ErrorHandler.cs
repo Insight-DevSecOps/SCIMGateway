@@ -1,10 +1,12 @@
 // ==========================================================================
 // T024: ErrorHandler - SCIM Error Response Generation
+// T078: Adapter error translation
 // ==========================================================================
 // Translates exceptions to SCIM error responses per RFC 7644
 // ==========================================================================
 
 using System.Net;
+using SCIMGateway.Core.Adapters;
 using SCIMGateway.Core.Models;
 
 namespace SCIMGateway.Core.Errors;
@@ -65,6 +67,22 @@ public class ScimError
     /// Human-readable error description.
     /// </summary>
     public string? Detail { get; set; }
+}
+
+/// <summary>
+/// Extended SCIM error with retry information for rate limiting and transient failures.
+/// </summary>
+public class ScimErrorWithRetry : ScimError
+{
+    /// <summary>
+    /// Number of seconds to wait before retrying, if applicable.
+    /// </summary>
+    public int? RetryAfterSeconds { get; set; }
+
+    /// <summary>
+    /// Whether the operation can be retried.
+    /// </summary>
+    public bool IsRetryable { get; set; }
 }
 
 /// <summary>
@@ -182,8 +200,17 @@ public class ErrorHandler : IErrorHandler
     /// <inheritdoc />
     public ScimError HandleException(Exception exception)
     {
+        // Unwrap AggregateException to find actual error
+        if (exception is AggregateException aggEx && aggEx.InnerExceptions.Count == 1)
+        {
+            return HandleException(aggEx.InnerExceptions[0]);
+        }
+
         return exception switch
         {
+            // T078: Handle AdapterException with SCIM error type mapping
+            AdapterException adapterEx => TranslateAdapterException(adapterEx),
+            
             ScimException scimEx => CreateScimError(scimEx.StatusCode, scimEx.ScimType, scimEx.Message),
             
             ArgumentNullException argEx => CreateScimError(
@@ -227,6 +254,47 @@ public class ErrorHandler : IErrorHandler
     public Task<ScimError> HandleExceptionAsync(Exception exception)
     {
         return Task.FromResult(HandleException(exception));
+    }
+
+    /// <summary>
+    /// Translates an AdapterException to a SCIM error response.
+    /// </summary>
+    /// <param name="exception">The adapter exception.</param>
+    /// <returns>A SCIM error response.</returns>
+    public ScimError TranslateAdapterException(AdapterException exception)
+    {
+        var statusCode = (HttpStatusCode)exception.GetRecommendedHttpStatusCode();
+        var scimType = exception.ScimErrorType;
+        
+        // Build detail message with context
+        var detail = exception.Message;
+        if (!string.IsNullOrEmpty(exception.ProviderErrorCode))
+        {
+            detail += $" (Provider error: {exception.ProviderErrorCode})";
+        }
+
+        return CreateScimError(statusCode, scimType, detail);
+    }
+
+    /// <summary>
+    /// Creates a SCIM error from an AdapterException with additional context.
+    /// </summary>
+    /// <param name="exception">The adapter exception.</param>
+    /// <param name="includeRetryAfter">Whether to include retry-after information.</param>
+    /// <returns>A SCIM error response with optional retry context.</returns>
+    public ScimErrorWithRetry TranslateAdapterExceptionWithRetry(AdapterException exception, bool includeRetryAfter = true)
+    {
+        var baseError = TranslateAdapterException(exception);
+        
+        return new ScimErrorWithRetry
+        {
+            Schemas = baseError.Schemas,
+            Status = baseError.Status,
+            ScimType = baseError.ScimType,
+            Detail = baseError.Detail,
+            RetryAfterSeconds = includeRetryAfter ? exception.RetryAfterSeconds : null,
+            IsRetryable = exception.IsRetryable
+        };
     }
 
     /// <summary>

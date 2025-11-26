@@ -1,9 +1,11 @@
 // ==========================================================================
 // T030: RequestHandler - SCIM Request Processing
+// T077: Adapter routing logic
 // ==========================================================================
 // Handles SCIM request parsing, routing, and tenant extraction
 // ==========================================================================
 
+using SCIMGateway.Core.Adapters;
 using SCIMGateway.Core.Validation;
 
 namespace SCIMGateway.Core.Handlers;
@@ -169,6 +171,18 @@ public class ScimRequest
     /// Actor (authenticated user) ID.
     /// </summary>
     public string? ActorId { get; set; }
+
+    /// <summary>
+    /// Request headers.
+    /// T077: Added for adapter routing via headers.
+    /// </summary>
+    public Dictionary<string, string>? Headers { get; set; }
+
+    /// <summary>
+    /// Provider ID for adapter routing.
+    /// T077: Optional provider ID for direct routing.
+    /// </summary>
+    public string? ProviderId { get; set; }
 }
 
 /// <summary>
@@ -238,6 +252,7 @@ public enum ScimResourceType
 public class RequestHandler : IRequestHandler
 {
     private readonly ISchemaValidator _schemaValidator;
+    private readonly IAdapterRegistry? _adapterRegistry;
 
     /// <summary>
     /// Initializes a new instance of RequestHandler.
@@ -245,6 +260,65 @@ public class RequestHandler : IRequestHandler
     public RequestHandler(ISchemaValidator schemaValidator)
     {
         _schemaValidator = schemaValidator ?? throw new ArgumentNullException(nameof(schemaValidator));
+    }
+
+    /// <summary>
+    /// Initializes a new instance of RequestHandler with adapter registry support.
+    /// T077: Adapter routing support.
+    /// </summary>
+    /// <param name="schemaValidator">The schema validator.</param>
+    /// <param name="adapterRegistry">The adapter registry for routing requests to adapters.</param>
+    public RequestHandler(ISchemaValidator schemaValidator, IAdapterRegistry adapterRegistry)
+        : this(schemaValidator)
+    {
+        _adapterRegistry = adapterRegistry ?? throw new ArgumentNullException(nameof(adapterRegistry));
+    }
+
+    /// <summary>
+    /// Gets the adapter for the given provider ID.
+    /// T077: Adapter routing.
+    /// </summary>
+    /// <param name="providerId">The provider ID.</param>
+    /// <returns>The adapter, or null if not found.</returns>
+    public IAdapter? GetAdapterForProvider(string providerId)
+    {
+        if (_adapterRegistry == null) return null;
+        return _adapterRegistry.TryGetAdapter(providerId, out var adapter) ? adapter : null;
+    }
+
+    /// <summary>
+    /// Gets the adapter for the given tenant.
+    /// T077: Tenant-based adapter routing.
+    /// </summary>
+    /// <param name="tenantId">The tenant ID.</param>
+    /// <param name="providerId">The provider ID (optional, uses default if not specified).</param>
+    /// <returns>The adapter, or null if not found.</returns>
+    public IAdapter? GetAdapterForTenant(string tenantId, string? providerId = null)
+    {
+        if (_adapterRegistry == null) return null;
+        try
+        {
+            // If no providerId specified, try to use a default
+            var effectiveProviderId = providerId ?? "default";
+            return _adapterRegistry.GetAdapterForTenant(tenantId, effectiveProviderId);
+        }
+        catch (AdapterNotFoundException)
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Extracts the provider ID from a SCIM request.
+    /// T077: Provider extraction from request context.
+    /// </summary>
+    /// <param name="request">The SCIM request.</param>
+    /// <returns>The provider ID, or null if not found.</returns>
+    public string? ExtractProviderId(ScimRequest request)
+    {
+        // Try to extract from request headers or path
+        // Provider can be in X-Provider-Id header or part of the path
+        return request.Headers?.GetValueOrDefault("X-Provider-Id");
     }
 
     /// <inheritdoc />
