@@ -5,6 +5,18 @@
 
 **Organization**: Tasks are grouped by user story to enable independent implementation and testing of each story.
 
+## Current Progress Summary
+
+| Phase | Status | Tasks | Tests |
+|-------|--------|-------|-------|
+| Phase 1: Setup | ✅ Complete | 10/10 | - |
+| Phase 2A: Contract Tests | ✅ Complete | 23/23 | 621 passing |
+| Phase 2B: Implementation | ✅ Complete | 23/23 | 621 passing |
+| Phase 2C: Test Alignment | ✅ Complete | - | 621 passing |
+| Phase 3: SCIM Endpoints | 🟢 In Progress | 6/32 | 621 passing |
+
+**Latest Commit**: `6cf0d0f` - Phase 3: T034-T038 - Implement SCIM User endpoints
+
 ## Format: `- [ ] [ID] [P?] [Story?] Description with file path`
 
 - **[P]**: Can run in parallel (different files, no dependencies)
@@ -129,12 +141,14 @@ Aligned implementations with contract test expectations. All 621 tests now passi
 
 ### Implementation for User Story 1
 
-- [ ] T034 [P] [US1] Implement POST /scim/v2/Users endpoint in src/Core/Endpoints/UsersEndpoint.cs (create user with SCIM validation per contracts/scim-user-endpoints.md, return 201 Created)
-- [ ] T035 [P] [US1] Implement GET /scim/v2/Users/{id} endpoint in src/Core/Endpoints/UsersEndpoint.cs (retrieve user by ID, return SCIM format with groups array, 404 if not found)
-- [ ] T036 [P] [US1] Implement PUT /scim/v2/Users/{id} endpoint in src/Core/Endpoints/UsersEndpoint.cs (full replacement with If-Match header for optimistic concurrency, return 200 OK, 409 version mismatch)
-- [ ] T037 [P] [US1] Implement PATCH /scim/v2/Users/{id} endpoint in src/Core/Endpoints/UsersEndpoint.cs (partial update with JSON Patch operations per RFC 6902, support add/remove/replace ops, path expressions)
-- [ ] T038 [P] [US1] Implement DELETE /scim/v2/Users/{id} endpoint in src/Core/Endpoints/UsersEndpoint.cs (delete user, return 204 No Content)
-- [ ] T039 [P] [US1] Implement GET /scim/v2/Users?filter=... endpoint in src/Core/Endpoints/UsersEndpoint.cs (list users with filtering, pagination startIndex/count, sorting sortBy/sortOrder, return ListResponse schema)
+**Status**: 🟢 IN PROGRESS - User endpoints (T034-T038) complete
+
+- [x] T034 [P] [US1] Implement POST /scim/v2/Users endpoint in src/Api/Controllers/UsersController.cs (create user with SCIM validation per contracts/scim-user-endpoints.md, return 201 Created)
+- [x] T035 [P] [US1] Implement GET /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (retrieve user by ID, return SCIM format with groups array, 404 if not found)
+- [x] T036 [P] [US1] Implement PUT /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (full replacement with If-Match header for optimistic concurrency, return 200 OK, 409 version mismatch)
+- [x] T037 [P] [US1] Implement PATCH /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (partial update with JSON Patch operations per RFC 6902, support add/remove/replace ops, path expressions)
+- [x] T038 [P] [US1] Implement DELETE /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (delete user, return 204 No Content)
+- [x] T039 [P] [US1] Implement GET /scim/v2/Users?filter=... endpoint in src/Api/Controllers/UsersController.cs (list users with filtering, pagination startIndex/count, sorting sortBy/sortOrder, return ListResponse schema)
 - [ ] T040 [P] [US1] Implement POST /scim/v2/Groups endpoint in src/Core/Endpoints/GroupsEndpoint.cs (create group with SCIM validation per contracts/scim-group-endpoints.md, return 201 Created)
 - [ ] T041 [P] [US1] Implement GET /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (retrieve group by ID with members array, 404 if not found)
 - [ ] T042 [P] [US1] Implement PUT /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (full replacement with If-Match header, return 200 OK)
