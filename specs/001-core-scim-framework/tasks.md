@@ -13,9 +13,10 @@
 | Phase 2A: Contract Tests | ✅ Complete | 23/23 | 621 passing |
 | Phase 2B: Implementation | ✅ Complete | 23/23 | 621 passing |
 | Phase 2C: Test Alignment | ✅ Complete | - | 621 passing |
-| Phase 3: SCIM Endpoints | 🟢 In Progress | 6/32 | 621 passing |
+| Phase 3: SCIM Endpoints | 🟢 In Progress | 11/32 | 661 passing |
 
 **Latest Commit**: `6cf0d0f` - Phase 3: T034-T038 - Implement SCIM User endpoints
+**Test Commit**: T053-T057 - Contract tests for User endpoints (40 new tests)
 
 ## Format: `- [ ] [ID] [P?] [Story?] Description with file path`
 
@@ -165,11 +166,13 @@ Aligned implementations with contract test expectations. All 621 tests now passi
 
 ### Tests for User Story 1
 
-- [ ] T053 [P] [US1] Contract test for POST /Users in tests/Contract/ScimUserEndpointTests.cs (verify RFC 7643 compliance, required attributes, 201 Created response)
-- [ ] T054 [P] [US1] Contract test for GET /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify response schema, groups array, 404 handling)
-- [ ] T055 [P] [US1] Contract test for PUT /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify If-Match header, version increment, 409 version mismatch)
-- [ ] T056 [P] [US1] Contract test for PATCH /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify JSON Patch operations, path expressions, 400 invalid path)
-- [ ] T057 [P] [US1] Contract test for DELETE /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify 204 No Content, 404 not found)
+**Status**: 🟢 IN PROGRESS - User endpoint tests (T053-T057) complete
+
+- [x] T053 [P] [US1] Contract test for POST /Users in tests/Contract/ScimUserEndpointTests.cs (verify RFC 7643 compliance, required attributes, 201 Created response)
+- [x] T054 [P] [US1] Contract test for GET /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify response schema, groups array, 404 handling)
+- [x] T055 [P] [US1] Contract test for GET /Users (list) in tests/Contract/ScimUserEndpointTests.cs (verify pagination, filter, sortBy parameters)
+- [x] T056 [P] [US1] Contract test for PATCH /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify JSON Patch operations, path expressions, 400 invalid path)
+- [x] T057 [P] [US1] Contract test for DELETE /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify 204 No Content, 404 not found)
 - [ ] T058 [P] [US1] Contract test for GET /Users?filter=... in tests/Contract/ScimUserEndpointTests.cs (verify 11 filter expressions, pagination, sorting)
 - [ ] T059 [P] [US1] Contract test for POST /Groups in tests/Contract/ScimGroupEndpointTests.cs (verify RFC 7643 compliance, displayName required/unique, 201 Created)
 - [ ] T060 [P] [US1] Contract test for GET /Groups/{id} in tests/Contract/ScimGroupEndpointTests.cs (verify members array, 404 handling)
