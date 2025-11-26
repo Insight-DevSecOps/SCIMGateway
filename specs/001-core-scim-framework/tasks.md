@@ -238,10 +238,10 @@ Additional tests created for T067-T071:
 
 ### Implementation for User Story 3
 
-- [ ] T086 [P] [US3] Create TransformationRule model in src/Transformations/TransformationRule.cs (id, tenantId, providerId, ruleType: EXACT/REGEX/HIERARCHICAL/CONDITIONAL, sourcePattern, targetMapping, priority, enabled, conflictResolution, examples per contracts/transformation-engine.md)
-- [ ] T087 [P] [US3] Create Entitlement model in src/Transformations/Entitlement.cs (providerEntitlementId, name, type: ROLE/PERMISSION_SET/PROFILE/ORG_UNIT/GROUP, mappedGroups, priority, metadata)
-- [ ] T088 [P] [US3] Create TransformationExample model in src/Transformations/TransformationExample.cs (input, expectedOutput, passed)
-- [ ] T089 [P] [US3] Create TransformationTestResult model in src/Transformations/TransformationTestResult.cs (allPassed, results array with input/expectedOutput/actualOutput/passed/errorMessage)
+- [x] T086 [P] [US3] Create TransformationRule model in src/SCIMGateway.Core/Models/Transformations/TransformationRule.cs ✅ (id, tenantId, providerId, ruleType: EXACT/REGEX/HIERARCHICAL/CONDITIONAL, sourcePattern, targetMapping, priority, enabled, conflictResolution, examples, RuleType enum, ConflictResolutionStrategy enum)
+- [x] T087 [P] [US3] Create Entitlement model in src/SCIMGateway.Core/Models/Transformations/Entitlement.cs ✅ (providerEntitlementId, name, type: ROLE/PERMISSION_SET/PROFILE/ORG_UNIT/GROUP/LICENSE/CUSTOM, mappedGroups, priority, metadata, sourceRuleId, appliedAt, EntitlementType enum)
+- [x] T088 [P] [US3] Create TransformationExample model in src/SCIMGateway.Core/Models/Transformations/TransformationExample.cs ✅ (input, expectedOutput, passed, description)
+- [x] T089 [P] [US3] Create TransformationTestResult model in src/SCIMGateway.Core/Models/Transformations/TransformationTestResult.cs ✅ (allPassed, results array with TestCaseResult, TransformationPreviewResult, TransformationConflict, ConflictStatus enum)
 - [ ] T090 [P] [US3] Define ITransformationEngine interface in src/Transformations/ITransformationEngine.cs (TransformGroupToEntitlementsAsync, TransformEntitlementToGroupsAsync, GetRulesAsync, CreateRuleAsync, UpdateRuleAsync, DeleteRuleAsync, TestRuleAsync, ResolveConflictsAsync)
 - [ ] T091 [US3] Implement TransformationEngine in src/Transformations/TransformationEngine.cs (load rules from Cosmos DB, match group displayName to rules by priority, apply transformation, handle conflicts)
 - [ ] T092 [US3] Implement EXACT pattern matching in src/Transformations/TransformationEngine.cs (case-sensitive string match, direct mapping)
