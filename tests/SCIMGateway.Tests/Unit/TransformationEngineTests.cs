@@ -22,13 +22,21 @@ public class TransformationEngineTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+
+            // Prefer Transformations namespace for transformation-related types
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     private static object? CreateInstance(Type type)
@@ -47,7 +55,7 @@ public class TransformationEngineTests
 
     #region T106 - EXACT Pattern Matching
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_Should_Match_When_String_Is_Identical()
     {
         // Arrange
@@ -78,7 +86,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales Team", sourcePattern);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_Should_Not_Match_Different_Case()
     {
         // Arrange - EXACT is case-sensitive per contract
@@ -100,7 +108,7 @@ public class TransformationEngineTests
         Assert.NotEqual(input, pattern); // Different case = no match
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_Should_Not_Match_With_Extra_Text()
     {
         // Arrange
@@ -122,7 +130,7 @@ public class TransformationEngineTests
         Assert.NotEqual(input, pattern);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_Should_Not_Match_Partial_Text()
     {
         // Arrange
@@ -144,7 +152,7 @@ public class TransformationEngineTests
         Assert.NotEqual(input, pattern);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_Should_Return_Correct_TargetMapping()
     {
         // Arrange
@@ -169,7 +177,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Representative", targetMapping);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void EXACT_Pattern_RuleType_Should_Be_Set_Correctly()
     {
         // Arrange
@@ -200,7 +208,7 @@ public class TransformationEngineTests
 
     #region T107 - REGEX Pattern Matching
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Match_Valid_Input()
     {
         // Arrange - Pattern: ^Sales-(.*)$
@@ -215,7 +223,7 @@ public class TransformationEngineTests
         Assert.True(match.Success);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Capture_Groups_Correctly()
     {
         // Arrange - Pattern: ^Sales-(.*)$, Input: Sales-EMEA
@@ -232,7 +240,7 @@ public class TransformationEngineTests
         Assert.Equal("EMEA", match.Groups[1].Value);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Substitute_Template_Variables()
     {
         // Arrange - Pattern: ^Sales-(.*)$, Template: Sales_${1}_Rep
@@ -255,7 +263,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_EMEA_Rep", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Not_Match_Invalid_Input()
     {
         // Arrange - Pattern: ^Sales-(.*)$, Input: Marketing-EMEA
@@ -270,7 +278,7 @@ public class TransformationEngineTests
         Assert.False(match.Success);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Handle_Multiple_Capture_Groups()
     {
         // Arrange - Pattern: ^(.+)-(.+)-(.+)$, Input: Sales-EMEA-Team
@@ -294,7 +302,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_EMEA_Team_Role", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Handle_Zero_Capture_Group()
     {
         // Arrange - ${0} represents the entire match
@@ -316,7 +324,7 @@ public class TransformationEngineTests
         Assert.Equal("Match_Sales-EMEA", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Support_Case_Insensitive_Matching()
     {
         // Arrange - Pattern with case-insensitive flag
@@ -336,7 +344,7 @@ public class TransformationEngineTests
         Assert.True(matchInsensitive.Success); // Case-insensitive passes
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_Should_Return_Null_When_No_Match()
     {
         // Arrange
@@ -352,7 +360,7 @@ public class TransformationEngineTests
         // When no match, transformation should return null/empty
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_RuleType_Should_Be_Set_To_REGEX()
     {
         // Arrange
@@ -377,7 +385,7 @@ public class TransformationEngineTests
         Assert.Equal(regexValue, actualRuleType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void REGEX_Pattern_With_Special_Characters_Should_Work()
     {
         // Arrange - Pattern with regex special characters
@@ -400,7 +408,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_EMEA_Rep", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091)")]
+    [Fact]
     public async Task TransformGroupToEntitlementsAsync_With_REGEX_Should_Return_Transformed_Entitlement()
     {
         // Arrange - Full integration with TransformationEngine
@@ -420,7 +428,7 @@ public class TransformationEngineTests
 
     #region RuleType Enum
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("RuleType");
@@ -428,7 +436,7 @@ public class TransformationEngineTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_EXACT_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -438,7 +446,7 @@ public class TransformationEngineTests
         Assert.Contains("EXACT", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_REGEX_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -448,7 +456,7 @@ public class TransformationEngineTests
         Assert.Contains("REGEX", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_HIERARCHICAL_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -458,7 +466,7 @@ public class TransformationEngineTests
         Assert.Contains("HIERARCHICAL", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_CONDITIONAL_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -474,14 +482,14 @@ public class TransformationEngineTests
 
     #region TransformationRule Model
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Exist()
     {
         var ruleType = GetTypeByName("TransformationRule");
         Assert.NotNull(ruleType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Required_Properties()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -499,7 +507,7 @@ public class TransformationEngineTests
         Assert.NotNull(ruleType.GetProperty("ConflictResolution"));
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Priority_Should_Be_Int()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -510,7 +518,7 @@ public class TransformationEngineTests
         Assert.Equal(typeof(int), priorityProp.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Enabled_Should_Be_Bool()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -527,7 +535,7 @@ public class TransformationEngineTests
 
     #region ITransformationEngine Interface
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Exist()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -535,7 +543,7 @@ public class TransformationEngineTests
         Assert.True(engineType.IsInterface);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_TransformGroupToEntitlementsAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -545,7 +553,7 @@ public class TransformationEngineTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_TransformEntitlementToGroupsAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -555,7 +563,7 @@ public class TransformationEngineTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_GetRulesAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -565,7 +573,7 @@ public class TransformationEngineTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_CreateRuleAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -575,7 +583,7 @@ public class TransformationEngineTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_TestRuleAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -585,7 +593,7 @@ public class TransformationEngineTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ITransformationEngine (T090)")]
+    [Fact]
     public void ITransformationEngine_Should_Have_ResolveConflictsAsync_Method()
     {
         var engineType = GetTypeByName("ITransformationEngine");
@@ -601,7 +609,7 @@ public class TransformationEngineTests
 
     #region T108 - HIERARCHICAL Pattern Matching
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Parse_Path_Correctly()
     {
         // Arrange - Path: "Acme Corp/Sales/EMEA/Field Sales"
@@ -619,7 +627,7 @@ public class TransformationEngineTests
         Assert.Equal("Field Sales", levels[3]); // level3
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Extract_Level_Variables()
     {
         // Arrange
@@ -639,7 +647,7 @@ public class TransformationEngineTests
         Assert.Equal("ORG-Field Sales", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Handle_Multiple_Level_References()
     {
         // Arrange
@@ -659,7 +667,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales-EMEA-Field Sales", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Fail_With_Insufficient_Levels()
     {
         // Arrange - Pattern expects 4 levels, input has only 2
@@ -676,7 +684,7 @@ public class TransformationEngineTests
         Assert.True(levels.Length <= 3);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Handle_Custom_Delimiter()
     {
         // Arrange - Using colon delimiter instead of slash
@@ -696,7 +704,7 @@ public class TransformationEngineTests
         Assert.Equal("DEPT-Department", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_Should_Handle_Empty_Levels()
     {
         // Arrange - Path with empty segment
@@ -711,7 +719,7 @@ public class TransformationEngineTests
         Assert.Equal("", levels[1]); // Empty level
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094)")]
+    [Fact]
     public void HIERARCHICAL_Pattern_RuleType_Should_Be_Set_To_HIERARCHICAL()
     {
         // Arrange
@@ -742,7 +750,7 @@ public class TransformationEngineTests
 
     #region T109 - CONDITIONAL Pattern Matching
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Match_When_Condition_Is_True()
     {
         // Arrange - Condition: groupName contains "Manager"
@@ -756,7 +764,7 @@ public class TransformationEngineTests
         Assert.True(matches);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Not_Match_When_Condition_Is_False()
     {
         // Arrange - Condition: groupName contains "Manager"
@@ -770,7 +778,7 @@ public class TransformationEngineTests
         Assert.False(matches);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Return_TrueValue_When_Condition_Met()
     {
         // Arrange
@@ -788,7 +796,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Manager", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Return_FalseValue_When_Condition_Not_Met()
     {
         // Arrange
@@ -806,7 +814,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Representative", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Support_Multiple_Conditions()
     {
         // Arrange - Multiple conditions: VP > Director > Manager > Employee
@@ -827,7 +835,7 @@ public class TransformationEngineTests
         Assert.Equal("VP_Role", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Support_Regex_Conditions()
     {
         // Arrange - Condition: matches regex pattern
@@ -842,7 +850,7 @@ public class TransformationEngineTests
         Assert.True(matches);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_Should_Fallback_When_No_Condition_Matches()
     {
         // Arrange
@@ -861,7 +869,7 @@ public class TransformationEngineTests
         Assert.Null(result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T095)")]
+    [Fact]
     public void CONDITIONAL_Pattern_RuleType_Should_Be_Set_To_CONDITIONAL()
     {
         // Arrange
@@ -892,7 +900,7 @@ public class TransformationEngineTests
 
     #region T111 - UNION Conflict Resolution
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void UNION_Resolution_Should_Return_All_Matched_Entitlements()
     {
         // Arrange - Multiple rules match the same group
@@ -911,7 +919,7 @@ public class TransformationEngineTests
         Assert.Contains("EMEA_Regional_Manager", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void UNION_Resolution_Should_Preserve_Order_By_Priority()
     {
         // Arrange - Entitlements with priorities
@@ -931,7 +939,7 @@ public class TransformationEngineTests
         Assert.Equal("EMEA_Role", sorted[2].Name);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void UNION_Resolution_Should_Handle_Single_Match()
     {
         // Arrange
@@ -945,7 +953,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Representative", result[0]);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void UNION_Resolution_Should_Handle_Empty_Matches()
     {
         // Arrange
@@ -964,7 +972,7 @@ public class TransformationEngineTests
 
     #region T112 - FIRST_MATCH Conflict Resolution
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void FIRST_MATCH_Resolution_Should_Return_Only_First_Entitlement()
     {
         // Arrange - Multiple rules match
@@ -984,7 +992,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Representative", result[0]);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void FIRST_MATCH_Resolution_Should_Respect_Priority_Order()
     {
         // Arrange
@@ -1003,7 +1011,7 @@ public class TransformationEngineTests
         Assert.Equal(1, firstMatch.Priority);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void FIRST_MATCH_Resolution_Should_Handle_Equal_Priorities()
     {
         // Arrange - Two rules with same priority
@@ -1020,7 +1028,7 @@ public class TransformationEngineTests
         Assert.Equal("Role_A", firstMatch.Name);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void FIRST_MATCH_Resolution_Should_Handle_Single_Match()
     {
         // Arrange
@@ -1043,7 +1051,7 @@ public class TransformationEngineTests
 
     #region T113 - HIGHEST_PRIVILEGE Conflict Resolution
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void HIGHEST_PRIVILEGE_Resolution_Should_Return_Highest_Privilege_Entitlement()
     {
         // Arrange - Entitlements with privilege levels (higher = more privileged)
@@ -1062,7 +1070,7 @@ public class TransformationEngineTests
         Assert.Equal(5, highest.PrivilegeLevel);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void HIGHEST_PRIVILEGE_Resolution_Should_Handle_Equal_Privileges()
     {
         // Arrange - Two roles with same privilege level
@@ -1079,7 +1087,7 @@ public class TransformationEngineTests
         Assert.Equal(3, highest.PrivilegeLevel);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void HIGHEST_PRIVILEGE_Resolution_Should_Fail_When_No_Privilege_Info()
     {
         // Arrange - Entitlements without privilege metadata
@@ -1096,7 +1104,7 @@ public class TransformationEngineTests
         Assert.Empty(withPrivilege);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void HIGHEST_PRIVILEGE_Resolution_Should_Use_Metadata_Ranking()
     {
         // Arrange - Privilege ranking from metadata
@@ -1122,7 +1130,7 @@ public class TransformationEngineTests
         Assert.Equal("Sales_Manager", highest);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T097)")]
+    [Fact]
     public void HIGHEST_PRIVILEGE_Resolution_Should_Handle_Single_Match()
     {
         // Arrange
@@ -1144,7 +1152,7 @@ public class TransformationEngineTests
 
     #region ConflictResolutionStrategy Enum
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -1152,7 +1160,7 @@ public class TransformationEngineTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_UNION_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -1162,7 +1170,7 @@ public class TransformationEngineTests
         Assert.Contains("UNION", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_FIRST_MATCH_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -1172,7 +1180,7 @@ public class TransformationEngineTests
         Assert.Contains("FIRST_MATCH", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_HIGHEST_PRIVILEGE_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -1182,7 +1190,7 @@ public class TransformationEngineTests
         Assert.Contains("HIGHEST_PRIVILEGE", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_MANUAL_REVIEW_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -1192,7 +1200,7 @@ public class TransformationEngineTests
         Assert.Contains("MANUAL_REVIEW", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_ERROR_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");

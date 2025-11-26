@@ -22,20 +22,28 @@ public class WorkdayTransformTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+
+            // Prefer Transformations namespace for transformation-related types
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     // ==================== HIERARCHICAL Transformation Tests ====================
 
     #region HIERARCHICAL Pattern Transformation
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Hierarchical_Path_Should_Extract_Levels()
     {
         // Arrange
@@ -53,7 +61,7 @@ public class WorkdayTransformTests
         Assert.Equal("Field Sales", levels[3]);   // level3
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Produce_ORG_Level3()
     {
         // Arrange
@@ -73,7 +81,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-Field Sales", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Produce_ORG_EMEA()
     {
         // Arrange
@@ -93,7 +101,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-EMEA", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Multi_Level_Template()
     {
         // Arrange
@@ -119,7 +127,7 @@ public class WorkdayTransformTests
 
     #region Insufficient Levels Handling
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Fail_With_Insufficient_Levels()
     {
         // Arrange - Template expects level3 but only 2 levels available
@@ -143,7 +151,7 @@ public class WorkdayTransformTests
         Assert.Contains("${level3}", result); // Unresolved
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Single_Level_Path()
     {
         // Arrange
@@ -164,7 +172,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-Standalone", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Empty_Path()
     {
         // Arrange
@@ -185,7 +193,7 @@ public class WorkdayTransformTests
 
     #region Custom Delimiter
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Support_Custom_Delimiter()
     {
         // Arrange - Using backslash delimiter
@@ -205,7 +213,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-EMEA", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Support_Colon_Delimiter()
     {
         // Arrange
@@ -231,7 +239,7 @@ public class WorkdayTransformTests
 
     #region Entitlement Type
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and Entitlement model (T087)")]
+    [Fact]
     public void Workday_Transform_Should_Create_ORG_UNIT_Entitlement()
     {
         // Arrange
@@ -245,7 +253,7 @@ public class WorkdayTransformTests
         Assert.NotNull(orgUnitValue);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and Entitlement model (T087)")]
+    [Fact]
     public void Workday_Transform_Should_Include_Full_Path_In_Metadata()
     {
         // Arrange
@@ -270,7 +278,7 @@ public class WorkdayTransformTests
 
     #region Multiple Rules
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Match_Specific_Hierarchy_First()
     {
         // Arrange - More specific rule has higher priority
@@ -312,7 +320,7 @@ public class WorkdayTransformTests
 
     #region Edge Cases
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Spaces_In_Path()
     {
         // Arrange
@@ -332,7 +340,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-EMEA Region", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Special_Characters_In_Path()
     {
         // Arrange
@@ -352,7 +360,7 @@ public class WorkdayTransformTests
         Assert.Equal("ORG-EMEA (Europe)", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T094) and WorkdayTransform (T102)")]
+    [Fact]
     public void Workday_Transform_Should_Handle_Unicode_In_Path()
     {
         // Arrange

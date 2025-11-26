@@ -16,18 +16,33 @@ namespace SCIMGateway.Tests.Contract;
 /// </summary>
 public class TransformationRuleTests
 {
-    private static Type? GetTypeByName(string typeName)
+    private static Type? GetTypeByName(string typeName, string? preferredNamespace = null)
     {
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+                
+            // If preferred namespace specified, try to find type in that namespace
+            if (preferredNamespace != null)
+            {
+                var preferred = types.FirstOrDefault(t => t.Namespace?.Contains(preferredNamespace) == true);
+                if (preferred != null) return preferred;
+            }
+            
+            // Otherwise return first match (prefer Transformations namespace for these tests)
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+            
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     private static object? CreateInstance(Type type)
@@ -46,14 +61,14 @@ public class TransformationRuleTests
 
     #region Model Existence
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Exist()
     {
         var ruleType = GetTypeByName("TransformationRule");
         Assert.NotNull(ruleType);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("RuleType");
@@ -61,7 +76,7 @@ public class TransformationRuleTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -69,14 +84,14 @@ public class TransformationRuleTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Model_Should_Exist()
     {
         var type = GetTypeByName("Entitlement");
         Assert.NotNull(type);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -90,7 +105,7 @@ public class TransformationRuleTests
 
     #region Required Fields
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Id_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -101,7 +116,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_TenantId_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -112,7 +127,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_ProviderId_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -123,7 +138,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_ProviderName_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -134,7 +149,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_RuleType_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -147,7 +162,7 @@ public class TransformationRuleTests
         Assert.Equal(enumType, property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_SourcePattern_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -158,7 +173,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_SourceType_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -169,7 +184,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_TargetType_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -180,7 +195,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_TargetMapping_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -191,7 +206,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Priority_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -202,7 +217,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Enabled_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -213,7 +228,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_ConflictResolution_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -226,7 +241,7 @@ public class TransformationRuleTests
         Assert.Equal(enumType, property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Metadata_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -237,7 +252,7 @@ public class TransformationRuleTests
         // Should be Dictionary<string, object>
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_Examples_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -248,7 +263,7 @@ public class TransformationRuleTests
         // Should be List<TransformationExample>
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_CreatedAt_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -259,7 +274,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(DateTime), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_UpdatedAt_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -270,7 +285,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(DateTime), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule model (T086)")]
+    [Fact]
     public void TransformationRule_Should_Have_CreatedBy_Property()
     {
         var ruleType = GetTypeByName("TransformationRule");
@@ -287,7 +302,7 @@ public class TransformationRuleTests
 
     #region RuleType Enum Values
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_EXACT_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -297,7 +312,7 @@ public class TransformationRuleTests
         Assert.Contains("EXACT", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_REGEX_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -307,7 +322,7 @@ public class TransformationRuleTests
         Assert.Contains("REGEX", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_HIERARCHICAL_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -317,7 +332,7 @@ public class TransformationRuleTests
         Assert.Contains("HIERARCHICAL", values);
     }
 
-    [Fact(Skip = "Pending implementation of RuleType enum (T086)")]
+    [Fact]
     public void RuleType_Should_Have_CONDITIONAL_Value()
     {
         var enumType = GetTypeByName("RuleType");
@@ -333,7 +348,7 @@ public class TransformationRuleTests
 
     #region ConflictResolutionStrategy Enum Values
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_UNION_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -343,7 +358,7 @@ public class TransformationRuleTests
         Assert.Contains("UNION", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_FIRST_MATCH_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -353,7 +368,7 @@ public class TransformationRuleTests
         Assert.Contains("FIRST_MATCH", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_HIGHEST_PRIVILEGE_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -363,7 +378,7 @@ public class TransformationRuleTests
         Assert.Contains("HIGHEST_PRIVILEGE", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_MANUAL_REVIEW_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -373,7 +388,7 @@ public class TransformationRuleTests
         Assert.Contains("MANUAL_REVIEW", values);
     }
 
-    [Fact(Skip = "Pending implementation of ConflictResolutionStrategy enum (T086)")]
+    [Fact]
     public void ConflictResolutionStrategy_Should_Have_ERROR_Value()
     {
         var enumType = GetTypeByName("ConflictResolutionStrategy");
@@ -389,7 +404,7 @@ public class TransformationRuleTests
 
     #region Entitlement Model
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_ProviderEntitlementId_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -400,7 +415,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_Name_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -411,7 +426,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_Type_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -424,7 +439,7 @@ public class TransformationRuleTests
         Assert.Equal(enumType, property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_MappedGroups_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -435,7 +450,7 @@ public class TransformationRuleTests
         // Should be List<string>
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_Priority_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -446,7 +461,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of Entitlement model (T087)")]
+    [Fact]
     public void Entitlement_Should_Have_Metadata_Property()
     {
         var type = GetTypeByName("Entitlement");
@@ -463,7 +478,7 @@ public class TransformationRuleTests
 
     #region EntitlementType Enum Values
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_ROLE_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -473,7 +488,7 @@ public class TransformationRuleTests
         Assert.Contains("ROLE", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_PERMISSION_SET_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -483,7 +498,7 @@ public class TransformationRuleTests
         Assert.Contains("PERMISSION_SET", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_PROFILE_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -493,7 +508,7 @@ public class TransformationRuleTests
         Assert.Contains("PROFILE", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_ORG_UNIT_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -503,7 +518,7 @@ public class TransformationRuleTests
         Assert.Contains("ORG_UNIT", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_GROUP_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -513,7 +528,7 @@ public class TransformationRuleTests
         Assert.Contains("GROUP", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_PERMISSION_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -523,7 +538,7 @@ public class TransformationRuleTests
         Assert.Contains("PERMISSION", values);
     }
 
-    [Fact(Skip = "Pending implementation of EntitlementType enum (T087)")]
+    [Fact]
     public void EntitlementType_Should_Have_CUSTOM_Value()
     {
         var enumType = GetTypeByName("EntitlementType");
@@ -539,14 +554,14 @@ public class TransformationRuleTests
 
     #region TransformationExample Model
 
-    [Fact(Skip = "Pending implementation of TransformationExample model (T088)")]
+    [Fact]
     public void TransformationExample_Should_Exist()
     {
         var type = GetTypeByName("TransformationExample");
         Assert.NotNull(type);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationExample model (T088)")]
+    [Fact]
     public void TransformationExample_Should_Have_Input_Property()
     {
         var type = GetTypeByName("TransformationExample");
@@ -557,7 +572,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationExample model (T088)")]
+    [Fact]
     public void TransformationExample_Should_Have_ExpectedOutput_Property()
     {
         var type = GetTypeByName("TransformationExample");
@@ -568,7 +583,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationExample model (T088)")]
+    [Fact]
     public void TransformationExample_Should_Have_Passed_Property()
     {
         var type = GetTypeByName("TransformationExample");
@@ -585,14 +600,14 @@ public class TransformationRuleTests
 
     #region TransformationTestResult Model
 
-    [Fact(Skip = "Pending implementation of TransformationTestResult model (T089)")]
+    [Fact]
     public void TransformationTestResult_Should_Exist()
     {
         var type = GetTypeByName("TransformationTestResult");
         Assert.NotNull(type);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationTestResult model (T089)")]
+    [Fact]
     public void TransformationTestResult_Should_Have_AllPassed_Property()
     {
         var type = GetTypeByName("TransformationTestResult");
@@ -603,7 +618,7 @@ public class TransformationRuleTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationTestResult model (T089)")]
+    [Fact]
     public void TransformationTestResult_Should_Have_Results_Property()
     {
         var type = GetTypeByName("TransformationTestResult");
@@ -614,14 +629,14 @@ public class TransformationRuleTests
         // Should be List<TestCaseResult>
     }
 
-    [Fact(Skip = "Pending implementation of TestCaseResult model (T089)")]
+    [Fact]
     public void TestCaseResult_Should_Exist()
     {
         var type = GetTypeByName("TestCaseResult");
         Assert.NotNull(type);
     }
 
-    [Fact(Skip = "Pending implementation of TestCaseResult model (T089)")]
+    [Fact]
     public void TestCaseResult_Should_Have_Required_Properties()
     {
         var type = GetTypeByName("TestCaseResult");
@@ -640,7 +655,7 @@ public class TransformationRuleTests
 
     #region Validation
 
-    [Fact(Skip = "Pending implementation of TransformationRule validation (T098)")]
+    [Fact]
     public void TransformationRule_Should_Require_Non_Empty_SourcePattern()
     {
         // Validation should reject empty source pattern
@@ -657,7 +672,7 @@ public class TransformationRuleTests
         // Validation should fail for empty source pattern
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule validation (T098)")]
+    [Fact]
     public void TransformationRule_Should_Require_Non_Empty_TargetMapping()
     {
         // Validation should reject empty target mapping
@@ -674,7 +689,7 @@ public class TransformationRuleTests
         // Validation should fail for empty target mapping
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule validation (T098)")]
+    [Fact]
     public void TransformationRule_Should_Validate_REGEX_Pattern_Syntax()
     {
         // REGEX rules should have valid regex in SourcePattern
@@ -684,7 +699,7 @@ public class TransformationRuleTests
         Assert.ThrowsAny<Exception>(() => new System.Text.RegularExpressions.Regex(invalidRegex));
     }
 
-    [Fact(Skip = "Pending implementation of TransformationRule validation (T098)")]
+    [Fact]
     public void TransformationRule_Priority_Should_Be_Positive()
     {
         var ruleType = GetTypeByName("TransformationRule");

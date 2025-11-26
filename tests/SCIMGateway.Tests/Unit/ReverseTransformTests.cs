@@ -21,20 +21,28 @@ public class ReverseTransformTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+
+            // Prefer Transformations namespace for transformation-related types
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     // ==================== Reverse Transformation Core Tests ====================
 
     #region Reverse Transformation - EXACT Pattern
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_EXACT_Should_Recover_Original_Group()
     {
         // Arrange
@@ -52,7 +60,7 @@ public class ReverseTransformTests
         Assert.Equal("Sales Team", sourcePattern);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_EXACT_Should_Return_Empty_When_No_Match()
     {
         // Arrange
@@ -70,7 +78,7 @@ public class ReverseTransformTests
 
     #region Reverse Transformation - REGEX Pattern
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_REGEX_Should_Reverse_Engineer_Input()
     {
         // Arrange
@@ -95,7 +103,7 @@ public class ReverseTransformTests
         Assert.Equal("EMEA", match.Groups[1].Value);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_REGEX_Should_Reconstruct_Original_Group()
     {
         // Arrange
@@ -122,7 +130,7 @@ public class ReverseTransformTests
         Assert.Equal("Sales-EMEA", reconstructedGroup);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_REGEX_Should_Handle_Multiple_Capture_Groups()
     {
         // Arrange
@@ -144,7 +152,7 @@ public class ReverseTransformTests
         Assert.Equal("Sales-EMEA-Field", reconstructed);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_REGEX_Should_Return_Empty_When_No_Match()
     {
         // Arrange
@@ -162,7 +170,7 @@ public class ReverseTransformTests
 
     #region Reverse Transformation - HIERARCHICAL Pattern
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_HIERARCHICAL_Should_Recover_Path()
     {
         // Arrange
@@ -180,7 +188,7 @@ public class ReverseTransformTests
         // Only the extracted level is known
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_HIERARCHICAL_Should_Handle_Multi_Level_Template()
     {
         // Arrange
@@ -201,7 +209,7 @@ public class ReverseTransformTests
 
     #region Reverse Transformation - CONDITIONAL Pattern
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_CONDITIONAL_Should_Return_Possible_Groups()
     {
         // Arrange
@@ -229,7 +237,7 @@ public class ReverseTransformTests
 
     #region Reverse Transformation - Multiple Rules
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_Should_Return_All_Matching_Groups()
     {
         // Arrange - Multiple rules could map to same entitlement
@@ -254,7 +262,7 @@ public class ReverseTransformTests
         Assert.Contains("Inside Sales", matchingGroups);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_Should_Order_Results_By_Priority()
     {
         // Arrange
@@ -281,42 +289,37 @@ public class ReverseTransformTests
 
     #endregion
 
-    #region IReverseTransform Interface Tests
+    #region ITransformationEngine Interface Tests (Reverse Transform Methods)
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
-    public void ReverseTransform_Class_Should_Exist()
+    [Fact]
+    public void TransformationEngine_Interface_Should_Exist()
     {
-        var type = GetTypeByName("ReverseTransform");
+        var type = GetTypeByName("ITransformationEngine");
         Assert.NotNull(type);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
-    public void ReverseTransform_Should_Have_TransformEntitlementToGroupsAsync_Method()
+    [Fact]
+    public void TransformationEngine_Should_Have_TransformEntitlementToGroupsAsync_Method()
     {
-        var type = GetTypeByName("ReverseTransform");
+        var type = GetTypeByName("ITransformationEngine");
         Assert.NotNull(type);
 
         var method = type.GetMethod("TransformEntitlementToGroupsAsync");
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
-    public void ReverseTransform_Should_Have_ReverseEngineerPattern_Method()
+    [Fact]
+    public void TransformationEngine_Implementation_Should_Exist()
     {
-        var type = GetTypeByName("ReverseTransform");
+        var type = GetTypeByName("TransformationEngine");
         Assert.NotNull(type);
-
-        // Internal helper method for reversing template patterns
-        var method = type.GetMethod("ReverseEngineerPattern", 
-            BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static);
-        // May be private implementation detail
     }
 
     #endregion
 
     #region Edge Cases
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_Should_Handle_Null_Entitlement()
     {
         // Arrange
@@ -326,7 +329,7 @@ public class ReverseTransformTests
         Assert.Null(providerEntitlement);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_Should_Handle_Empty_Entitlement()
     {
         // Arrange
@@ -340,7 +343,7 @@ public class ReverseTransformTests
         Assert.False(match.Success);
     }
 
-    [Fact(Skip = "Pending implementation of ReverseTransform (T096)")]
+    [Fact]
     public void ReverseTransform_Should_Handle_Special_Characters_In_Entitlement()
     {
         // Arrange

@@ -23,20 +23,28 @@ public class TransformationPreviewTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+
+            // Prefer Transformations namespace for transformation-related types
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     // ==================== Preview Response Structure Tests ====================
 
     #region Response Structure
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void TransformationPreviewResponse_Should_Include_MatchedRuleId()
     {
         // Arrange
@@ -53,7 +61,7 @@ public class TransformationPreviewTests
         Assert.Equal("rule-001", previewResponse.matchedRuleId);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void TransformationPreviewResponse_Should_Include_TransformedEntitlement()
     {
         // Arrange
@@ -77,7 +85,7 @@ public class TransformationPreviewTests
         Assert.Equal("Sales_EMEA_Rep", previewResponse.transformedEntitlement.name);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void TransformationPreviewResponse_Should_Include_Conflicts_Array()
     {
         // Arrange
@@ -94,7 +102,7 @@ public class TransformationPreviewTests
         Assert.Empty(previewResponse.conflicts);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void TransformationPreviewResponse_AppliedAt_Should_Be_Null()
     {
         // Arrange - Preview should NOT persist, so appliedAt is null
@@ -116,7 +124,7 @@ public class TransformationPreviewTests
 
     #region Non-Persisting Behavior
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Not_Persist_Transformation()
     {
         // Arrange
@@ -136,7 +144,7 @@ public class TransformationPreviewTests
         Assert.False(persistedBefore);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Not_Call_Adapter()
     {
         // Arrange
@@ -149,7 +157,7 @@ public class TransformationPreviewTests
         Assert.False(adapterCalled);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Not_Create_Audit_Log_Entry()
     {
         // Arrange
@@ -167,7 +175,7 @@ public class TransformationPreviewTests
 
     #region Request Validation
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Request_Should_Require_GroupDisplayName()
     {
         // Arrange
@@ -182,7 +190,7 @@ public class TransformationPreviewTests
         Assert.NotNull(request.groupDisplayName);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Request_Should_Require_TenantId()
     {
         // Arrange
@@ -197,7 +205,7 @@ public class TransformationPreviewTests
         Assert.NotNull(request.tenantId);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Request_Should_Require_ProviderId()
     {
         // Arrange
@@ -218,7 +226,7 @@ public class TransformationPreviewTests
 
     #region Conflict Detection
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Detect_Multiple_Rule_Matches()
     {
         // Arrange - Group matches multiple rules
@@ -246,7 +254,7 @@ public class TransformationPreviewTests
         Assert.Single(conflicts); // First match is primary, others are conflicts
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Return_Conflict_Details()
     {
         // Arrange
@@ -274,7 +282,7 @@ public class TransformationPreviewTests
         Assert.Single(previewResponse.conflicts);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_With_No_Conflicts_Should_Have_Empty_Array()
     {
         // Arrange - Only one rule matches
@@ -299,7 +307,7 @@ public class TransformationPreviewTests
 
     #region Preview Results
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Return_Transformed_Entitlement_Name()
     {
         // Arrange
@@ -324,7 +332,7 @@ public class TransformationPreviewTests
         Assert.Equal("Sales_EMEA_Rep", previewResponse.transformedEntitlement.name);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Return_Entitlement_Type()
     {
         // Arrange
@@ -345,7 +353,7 @@ public class TransformationPreviewTests
         Assert.Equal("ROLE", previewResponse.transformedEntitlement.type);
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_With_No_Match_Should_Return_Null_Entitlement()
     {
         // Arrange - No rules match
@@ -380,7 +388,7 @@ public class TransformationPreviewTests
 
     #region Error Handling
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Handle_Invalid_GroupDisplayName()
     {
         // Arrange
@@ -390,7 +398,7 @@ public class TransformationPreviewTests
         Assert.True(string.IsNullOrEmpty(groupDisplayName));
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Handle_Unknown_ProviderId()
     {
         // Arrange
@@ -402,7 +410,7 @@ public class TransformationPreviewTests
         // Should return appropriate error response
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public void Preview_Should_Handle_Invalid_Regex_In_Rule()
     {
         // Arrange
@@ -418,7 +426,7 @@ public class TransformationPreviewTests
 
     #region API Endpoint
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public async Task POST_Transform_Preview_Should_Return_200_OK()
     {
         // Arrange
@@ -437,7 +445,7 @@ public class TransformationPreviewTests
         await Task.CompletedTask;
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public async Task POST_Transform_Preview_Should_Return_400_For_Missing_Fields()
     {
         // Arrange
@@ -454,7 +462,7 @@ public class TransformationPreviewTests
         await Task.CompletedTask;
     }
 
-    [Fact(Skip = "Pending implementation of Transformation Preview API")]
+    [Fact]
     public async Task POST_Transform_Preview_Should_Require_Authentication()
     {
         // Arrange - No auth token

@@ -22,20 +22,28 @@ public class SalesforceTransformTests
         var assemblies = AppDomain.CurrentDomain.GetAssemblies()
             .Where(a => a.GetName().Name?.StartsWith("SCIMGateway") == true);
 
+        Type? fallback = null;
         foreach (var assembly in assemblies)
         {
-            var type = assembly.GetTypes()
-                .FirstOrDefault(t => t.Name == typeName);
-            if (type != null) return type;
+            var types = assembly.GetTypes()
+                .Where(t => t.Name == typeName)
+                .ToList();
+
+            // Prefer Transformations namespace for transformation-related types
+            var transformationType = types.FirstOrDefault(t => t.Namespace?.Contains("Transformations") == true);
+            if (transformationType != null) return transformationType;
+
+            if (fallback == null && types.Count > 0)
+                fallback = types.First();
         }
-        return null;
+        return fallback;
     }
 
     // ==================== REGEX Transformation Tests ====================
 
     #region REGEX Pattern Transformation
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Sales_EMEA_Should_Produce_Sales_EMEA_Rep()
     {
         // Arrange
@@ -59,7 +67,7 @@ public class SalesforceTransformTests
         Assert.Equal("Sales_EMEA_Rep", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Sales_APAC_Should_Produce_Sales_APAC_Rep()
     {
         // Arrange
@@ -81,7 +89,7 @@ public class SalesforceTransformTests
         Assert.Equal("Sales_APAC_Rep", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Non_Sales_Group_Should_Not_Match()
     {
         // Arrange
@@ -102,7 +110,7 @@ public class SalesforceTransformTests
 
     #region EXACT Pattern Transformation
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Exact_Sales_Team_Should_Produce_Sales_Representative()
     {
         // Arrange
@@ -121,7 +129,7 @@ public class SalesforceTransformTests
         }
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Exact_Should_Be_Case_Sensitive()
     {
         // Arrange
@@ -141,7 +149,7 @@ public class SalesforceTransformTests
 
     #region Entitlement Output
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and Entitlement model (T087)")]
+    [Fact]
     public void Salesforce_Transform_Should_Create_Entitlement_With_Correct_Type()
     {
         // Arrange
@@ -155,7 +163,7 @@ public class SalesforceTransformTests
         Assert.NotNull(roleValue);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and Entitlement model (T087)")]
+    [Fact]
     public void Salesforce_Transform_Should_Include_Source_Group_In_MappedGroups()
     {
         // Arrange
@@ -167,7 +175,7 @@ public class SalesforceTransformTests
         Assert.Contains("Sales-EMEA", mappedGroups);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and Entitlement model (T087)")]
+    [Fact]
     public async Task Salesforce_Transform_Should_Call_Adapter_With_Correct_Entitlement()
     {
         // Arrange
@@ -187,7 +195,7 @@ public class SalesforceTransformTests
 
     #region Multiple Rules
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Should_Apply_Rules_By_Priority()
     {
         // Arrange - Multiple rules for Sales groups
@@ -216,7 +224,7 @@ public class SalesforceTransformTests
         Assert.Equal("Sales_Manager_EMEA", result);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091) and SalesforceTransform (T101)")]
+    [Fact]
     public void Salesforce_Transform_Should_Apply_Multiple_Entitlements_With_UNION()
     {
         // Arrange
@@ -245,7 +253,7 @@ public class SalesforceTransformTests
 
     #region Error Handling
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091)")]
+    [Fact]
     public void Salesforce_Transform_Should_Handle_No_Matching_Rules()
     {
         // Arrange
@@ -260,7 +268,7 @@ public class SalesforceTransformTests
         Assert.False(match.Success);
     }
 
-    [Fact(Skip = "Pending implementation of TransformationEngine (T091)")]
+    [Fact]
     public void Salesforce_Transform_Should_Handle_Disabled_Rules()
     {
         // Arrange
