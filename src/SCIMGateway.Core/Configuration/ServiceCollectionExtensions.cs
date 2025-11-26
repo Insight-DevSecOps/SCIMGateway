@@ -32,7 +32,7 @@ public static class ServiceCollectionExtensions
 
         // Repositories
         services.AddScoped<IUserRepository, UserRepository>();
-        // services.AddScoped<IGroupRepository, GroupRepository>(); // To be added
+        services.AddScoped<IGroupRepository, GroupRepository>();
 
         // Validation
         services.AddSingleton<ISchemaValidator, SchemaValidator>();

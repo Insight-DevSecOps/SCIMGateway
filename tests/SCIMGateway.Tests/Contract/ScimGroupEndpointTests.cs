@@ -194,7 +194,7 @@ public class ScimGroupEndpointTests
 
     #region T059: POST /Groups Endpoint Contract Tests
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Exist()
     {
         // Arrange & Act - Repository interface for Group persistence
@@ -205,7 +205,7 @@ public class ScimGroupEndpointTests
         Assert.True(repoInterface.IsInterface);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_CreateAsync_Method()
     {
         // Arrange
@@ -217,7 +217,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_CreateAsync_Should_Return_Task_Of_ScimGroup()
     {
         // Arrange
@@ -232,7 +232,7 @@ public class ScimGroupEndpointTests
         Assert.True(returnType.IsGenericType || returnType.Name.Contains("Task"));
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_DisplayNameExistsAsync_Method()
     {
         // Arrange - Per contract, displayName must be unique
@@ -248,7 +248,7 @@ public class ScimGroupEndpointTests
 
     #region T060: GET /Groups/{id} Endpoint Contract Tests
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_GetByIdAsync_Method()
     {
         // Arrange
@@ -260,7 +260,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_GetByIdAsync_Should_Accept_Id_Parameter()
     {
         // Arrange
@@ -277,7 +277,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(idParam);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_GetByIdAsync_Should_Accept_TenantId_Parameter()
     {
         // Arrange - For multi-tenant isolation
@@ -294,7 +294,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(tenantParam);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_ListAsync_Method()
     {
         // Arrange - For GET /Groups (list)
@@ -310,7 +310,7 @@ public class ScimGroupEndpointTests
 
     #region T061: PATCH /Groups/{id} Endpoint Contract Tests
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_PatchAsync_Method()
     {
         // Arrange
@@ -322,7 +322,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_UpdateAsync_Method()
     {
         // Arrange - For PUT /Groups/{id}
@@ -334,7 +334,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_DeleteAsync_Method()
     {
         // Arrange - For DELETE /Groups/{id}
@@ -346,7 +346,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_AddMemberAsync_Method()
     {
         // Arrange - Specific method for adding member to group
@@ -358,7 +358,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_RemoveMemberAsync_Method()
     {
         // Arrange - Specific method for removing member from group
@@ -370,7 +370,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_GetMembersAsync_Method()
     {
         // Arrange - Get members of a group
@@ -386,7 +386,7 @@ public class ScimGroupEndpointTests
 
     #region GroupsController Structure Tests (Expected Contract)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Exist_In_Api_Assembly()
     {
         // Arrange & Act
@@ -397,7 +397,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(controllerType);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Inherit_From_ControllerBase()
     {
         // Arrange
@@ -409,7 +409,7 @@ public class ScimGroupEndpointTests
             "GroupsController must inherit from ControllerBase");
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_ApiController_Attribute()
     {
         // Arrange
@@ -421,7 +421,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(attribute);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_Route_Attribute_For_SCIM_Path()
     {
         // Arrange
@@ -434,7 +434,7 @@ public class ScimGroupEndpointTests
         Assert.Contains("scim", routeAttribute.Template?.ToLower() ?? "");
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_CreateGroup_Method()
     {
         // Arrange
@@ -450,7 +450,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(createMethod);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void CreateGroup_Method_Should_Have_HttpPost_Attribute()
     {
         // Arrange
@@ -463,7 +463,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(httpPost);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_GetGroup_Method()
     {
         // Arrange
@@ -481,7 +481,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(getByIdMethod);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GetGroup_Method_Should_Have_HttpGet_With_Id_Route()
     {
         // Arrange
@@ -495,7 +495,7 @@ public class ScimGroupEndpointTests
         Assert.Contains("{id}", httpGet.Template ?? "", StringComparison.OrdinalIgnoreCase);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_PatchGroup_Method()
     {
         // Arrange
@@ -511,7 +511,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(patchMethod);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void PatchGroup_Method_Should_Have_HttpPatch_Attribute()
     {
         // Arrange
@@ -524,7 +524,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(httpPatch);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void PatchGroup_Method_Should_Have_Id_In_Route()
     {
         // Arrange
@@ -539,7 +539,7 @@ public class ScimGroupEndpointTests
     }
 
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_DeleteGroup_Method()
     {
         // Arrange
@@ -555,7 +555,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(deleteMethod);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Have_ListGroups_Method()
     {
         // Arrange
@@ -577,7 +577,7 @@ public class ScimGroupEndpointTests
         Assert.NotNull(listMethod);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void ListGroups_Method_Should_Support_Filter_Parameter()
     {
         // Arrange
@@ -594,7 +594,7 @@ public class ScimGroupEndpointTests
         Assert.True(hasFilter, "ListGroups should support filter parameter per RFC 7644");
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void ListGroups_Method_Should_Support_Pagination_Parameters()
     {
         // Arrange

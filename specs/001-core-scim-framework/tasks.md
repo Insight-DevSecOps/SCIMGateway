@@ -13,10 +13,10 @@
 | Phase 2A: Contract Tests | ✅ Complete | 23/23 | 621 passing |
 | Phase 2B: Implementation | ✅ Complete | 23/23 | 621 passing |
 | Phase 2C: Test Alignment | ✅ Complete | - | 621 passing |
-| Phase 3: SCIM Endpoints | 🟢 In Progress | 11/32 | 868 tests (829 pass, 39 skip) |
+| Phase 3: SCIM Endpoints | 🟢 In Progress | 17/32 | 868 tests (868 pass) |
 
-**Latest Commit**: `6cf0d0f` - Phase 3: T034-T038 - Implement SCIM User endpoints
-**Test Commit**: T053-T057 - Contract tests for User endpoints (40 new tests)
+**Latest Commit**: T040-T045 - Implement SCIM Group endpoints (GroupsController, IGroupRepository, GroupRepository)
+**Test Status**: All 868 tests passing (0 skipped)
 
 ## Format: `- [ ] [ID] [P?] [Story?] Description with file path`
 
@@ -150,12 +150,12 @@ Aligned implementations with contract test expectations. All 621 tests now passi
 - [x] T037 [P] [US1] Implement PATCH /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (partial update with JSON Patch operations per RFC 6902, support add/remove/replace ops, path expressions)
 - [x] T038 [P] [US1] Implement DELETE /scim/v2/Users/{id} endpoint in src/Api/Controllers/UsersController.cs (delete user, return 204 No Content)
 - [x] T039 [P] [US1] Implement GET /scim/v2/Users?filter=... endpoint in src/Api/Controllers/UsersController.cs (list users with filtering, pagination startIndex/count, sorting sortBy/sortOrder, return ListResponse schema)
-- [ ] T040 [P] [US1] Implement POST /scim/v2/Groups endpoint in src/Core/Endpoints/GroupsEndpoint.cs (create group with SCIM validation per contracts/scim-group-endpoints.md, return 201 Created)
-- [ ] T041 [P] [US1] Implement GET /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (retrieve group by ID with members array, 404 if not found)
-- [ ] T042 [P] [US1] Implement PUT /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (full replacement with If-Match header, return 200 OK)
-- [ ] T043 [P] [US1] Implement PATCH /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (partial update for members add/remove operations)
-- [ ] T044 [P] [US1] Implement DELETE /scim/v2/Groups/{id} endpoint in src/Core/Endpoints/GroupsEndpoint.cs (delete group, return 204 No Content)
-- [ ] T045 [P] [US1] Implement GET /scim/v2/Groups?filter=... endpoint in src/Core/Endpoints/GroupsEndpoint.cs (list groups with filtering and pagination)
+- [x] T040 [P] [US1] Implement POST /scim/v2/Groups endpoint in src/Api/Controllers/GroupsController.cs (create group with SCIM validation per contracts/scim-group-endpoints.md, return 201 Created)
+- [x] T041 [P] [US1] Implement GET /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (retrieve group by ID with members array, 404 if not found)
+- [x] T042 [P] [US1] Implement PUT /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (full replacement with If-Match header, return 200 OK)
+- [x] T043 [P] [US1] Implement PATCH /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (partial update for members add/remove operations)
+- [x] T044 [P] [US1] Implement DELETE /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (delete group, return 204 No Content)
+- [x] T045 [P] [US1] Implement GET /scim/v2/Groups?filter=... endpoint in src/Api/Controllers/GroupsController.cs (list groups with filtering and pagination)
 - [ ] T046 [US1] Implement Enterprise User Extension in src/Core/Extensions/EnterpriseUserExtension.cs (urn:ietf:params:scim:schemas:extension:enterprise:2.0:User with employeeNumber, costCenter, organization, division, department, manager reference)
 - [ ] T047 [US1] Implement SCIM error response generation in src/Core/ErrorHandler.cs (standard error schema with status/scimType/detail, 11 error code mappings per contracts)
 - [ ] T048 [US1] Add validation for User operations in src/Core/SchemaValidator.cs (userName required/unique, email format RFC 5322, active boolean, displayName string)
@@ -174,11 +174,11 @@ Aligned implementations with contract test expectations. All 621 tests now passi
 - [x] T056 [P] [US1] Contract test for PATCH /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify JSON Patch operations, path expressions, 400 invalid path)
 - [x] T057 [P] [US1] Contract test for DELETE /Users/{id} in tests/Contract/ScimUserEndpointTests.cs (verify 204 No Content, 404 not found)
 - [x] T058 [P] [US1] Contract test for GET /Users?filter=... in tests/Contract/ScimUserEndpointTests.cs (verify 11 filter expressions, pagination, sorting) ✅ 32 new tests for filter operators, pagination, sorting
-- [x] T059 [P] [US1] Contract test for POST /Groups in tests/Contract/ScimGroupEndpointTests.cs (verify RFC 7643 compliance, displayName required/unique, 201 Created) ✅ Skipped pending T040-T045
-- [x] T060 [P] [US1] Contract test for GET /Groups/{id} in tests/Contract/ScimGroupEndpointTests.cs (verify members array, 404 handling) ✅ Skipped pending T040-T045
-- [x] T061 [P] [US1] Contract test for PATCH /Groups/{id} in tests/Contract/ScimGroupEndpointTests.cs (verify member add/remove operations) ✅ Skipped pending T040-T045
+- [x] T059 [P] [US1] Contract test for POST /Groups in tests/Contract/ScimGroupEndpointTests.cs (verify RFC 7643 compliance, displayName required/unique, 201 Created) ✅ 29 tests enabled
+- [x] T060 [P] [US1] Contract test for GET /Groups/{id} in tests/Contract/ScimGroupEndpointTests.cs (verify members array, 404 handling) ✅ All tests passing
+- [x] T061 [P] [US1] Contract test for PATCH /Groups/{id} in tests/Contract/ScimGroupEndpointTests.cs (verify member add/remove operations) ✅ All tests passing
 - [x] T062 [P] [US1] Integration test for User lifecycle in tests/Integration/UserLifecycleTests.cs (create → read → update → delete flow, verify audit logs) ✅ 27 tests
-- [x] T063 [P] [US1] Integration test for Group lifecycle in tests/Integration/GroupLifecycleTests.cs (create group → add members → remove members → delete) ✅ 22 tests (10 skipped pending T040-T045)
+- [x] T063 [P] [US1] Integration test for Group lifecycle in tests/Integration/GroupLifecycleTests.cs (create group → add members → remove members → delete) ✅ 22 tests (all enabled)
 - [x] T064 [P] [US1] Security test for authentication in tests/Security/TokenValidationTests.cs (missing token → 401, invalid token → 401, expired token → 401) ✅ 40 tests
 - [x] T065 [P] [US1] Security test for tenant isolation in tests/Security/TenantIsolationTests.cs (verify cross-tenant access impossible, tenant filter on all queries) ✅ 41 tests
 

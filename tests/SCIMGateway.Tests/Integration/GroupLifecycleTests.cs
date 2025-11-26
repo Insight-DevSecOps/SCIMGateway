@@ -109,7 +109,7 @@ public class GroupLifecycleTests
 
     #region Create Group Phase Tests (Skipped - pending implementation)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Exist_For_Lifecycle()
     {
         // Arrange & Act
@@ -120,7 +120,7 @@ public class GroupLifecycleTests
         Assert.True(repoType.IsInterface);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_CreateAsync_For_Create_Phase()
     {
         // Arrange
@@ -132,7 +132,7 @@ public class GroupLifecycleTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Exist_For_Lifecycle()
     {
         // Arrange & Act
@@ -146,7 +146,7 @@ public class GroupLifecycleTests
 
     #region Add Members Phase Tests (Skipped - pending implementation)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_AddMemberAsync()
     {
         // Arrange
@@ -158,7 +158,7 @@ public class GroupLifecycleTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_GetMembersAsync()
     {
         // Arrange
@@ -170,7 +170,7 @@ public class GroupLifecycleTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_PatchAsync_For_Member_Updates()
     {
         // Arrange - PATCH is used for member add/remove operations
@@ -186,7 +186,7 @@ public class GroupLifecycleTests
 
     #region Remove Members Phase Tests (Skipped - pending implementation)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_RemoveMemberAsync()
     {
         // Arrange
@@ -202,7 +202,7 @@ public class GroupLifecycleTests
 
     #region Delete Group Phase Tests (Skipped - pending implementation)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void IGroupRepository_Should_Have_DeleteAsync_For_Delete_Phase()
     {
         // Arrange
@@ -284,7 +284,7 @@ public class GroupLifecycleTests
 
     #region Controller Dependency Tests (Skipped - pending implementation)
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Depend_On_IGroupRepository()
     {
         // Arrange - Controller should inject repository for data operations
@@ -302,7 +302,7 @@ public class GroupLifecycleTests
         Assert.True(hasRepoParam, "GroupsController should inject IGroupRepository");
     }
 
-    [Fact(Skip = "Pending implementation of T040-T045: Group endpoints")]
+    [Fact]
     public void GroupsController_Should_Depend_On_IAuditLogger()
     {
         // Arrange - Controller should inject audit logger
