@@ -13,8 +13,8 @@ builder.Services.AddApplicationInsightsTelemetry();
 builder.Services.Configure<ScimGatewayOptions>(
     builder.Configuration.GetSection("ScimGateway"));
 
-// Add core services (to be implemented in Phase 2)
-// builder.Services.AddScimGatewayCore();
+// Add SCIM Gateway core services
+builder.Services.AddScimGatewayCore();
 
 // Add health checks
 builder.Services.AddHealthChecks();

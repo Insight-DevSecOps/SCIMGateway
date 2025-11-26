@@ -422,3 +422,47 @@ public class VersionMismatchException : ScimException
         ActualVersion = actualVersion;
     }
 }
+
+/// <summary>
+/// Exception for conflict errors (e.g., resource already exists).
+/// </summary>
+public class ScimConflictException : ScimException
+{
+    public ScimConflictException(string message)
+        : base(HttpStatusCode.Conflict, ScimErrorType.Uniqueness, message)
+    {
+    }
+}
+
+/// <summary>
+/// Exception for resource not found errors.
+/// </summary>
+public class ScimNotFoundException : ScimException
+{
+    public ScimNotFoundException(string message)
+        : base(HttpStatusCode.NotFound, null, message)
+    {
+    }
+}
+
+/// <summary>
+/// Exception for invalid filter expressions.
+/// </summary>
+public class ScimInvalidFilterException : ScimException
+{
+    public ScimInvalidFilterException(string message)
+        : base(HttpStatusCode.BadRequest, ScimErrorType.InvalidFilter, message)
+    {
+    }
+}
+
+/// <summary>
+/// Exception for invalid syntax errors.
+/// </summary>
+public class ScimInvalidSyntaxException : ScimException
+{
+    public ScimInvalidSyntaxException(string message)
+        : base(HttpStatusCode.BadRequest, ScimErrorType.InvalidSyntax, message)
+    {
+    }
+}

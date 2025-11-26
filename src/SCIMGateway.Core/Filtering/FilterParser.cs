@@ -641,3 +641,84 @@ public class FilterParseException : Exception
     {
     }
 }
+
+/// <summary>
+/// Represents a comparison filter expression (e.g., userName eq "john").
+/// </summary>
+public class ComparisonExpression : FilterExpression
+{
+    public new string AttributePath { get; set; } = string.Empty;
+    public new FilterOperator Operator { get; set; }
+    public new object? Value { get; set; }
+
+    public ComparisonExpression() 
+    {
+        ExpressionType = FilterExpressionType.Comparison;
+    }
+
+    public ComparisonExpression(string attributePath, FilterOperator op, object? value) : this()
+    {
+        AttributePath = attributePath;
+        Operator = op;
+        Value = value;
+    }
+}
+
+/// <summary>
+/// Represents a logical AND/OR expression.
+/// </summary>
+public class LogicalExpression : FilterExpression
+{
+    public new FilterExpression Left { get; set; } = null!;
+    public new FilterExpression Right { get; set; } = null!;
+    public new LogicalOperator Operator { get; set; }
+
+    public LogicalExpression()
+    {
+        ExpressionType = FilterExpressionType.Logical;
+    }
+
+    public LogicalExpression(FilterExpression left, LogicalOperator op, FilterExpression right) : this()
+    {
+        Left = left;
+        Operator = op;
+        Right = right;
+    }
+}
+
+/// <summary>
+/// Represents a NOT expression.
+/// </summary>
+public class NotExpression : FilterExpression
+{
+    public FilterExpression Expression { get; set; } = null!;
+
+    public NotExpression()
+    {
+        ExpressionType = FilterExpressionType.Not;
+    }
+
+    public NotExpression(FilterExpression expression) : this()
+    {
+        Expression = expression;
+    }
+}
+
+/// <summary>
+/// Represents a presence expression (e.g., emails pr).
+/// </summary>
+public class PresenceExpression : FilterExpression
+{
+    public new string AttributePath { get; set; } = string.Empty;
+
+    public PresenceExpression()
+    {
+        ExpressionType = FilterExpressionType.Presence;
+        Operator = FilterOperator.Present;
+    }
+
+    public PresenceExpression(string attributePath) : this()
+    {
+        AttributePath = attributePath;
+    }
+}
