@@ -251,8 +251,8 @@ Additional tests created for T067-T071:
 - [x] T096 [US3] Implement reverse transformation in TransformationEngine.cs ✅ (entitlement → group mapping for drift detection, reverse EXACT/REGEX/HIERARCHICAL, template reverse-engineering)
 - [x] T097 [US3] Implement conflict resolution strategies in TransformationEngine.cs ✅ (UNION: all entitlements, FIRST_MATCH: priority-based, HIGHEST_PRIVILEGE: privilege ranking from metadata, MANUAL_REVIEW: log for admin, ERROR: throw TransformationConflictException)
 - [x] T098 [US3] Implement transformation rule validation in TransformationEngine.cs ✅ (required fields, regex syntax, template variable validation, hierarchical level checks, conditional operator validation, warnings for best practices)
-- [ ] T099 [US3] Implement transformation rule caching in src/Transformations/TransformationEngine.cs (in-memory cache, 5-minute refresh from Cosmos DB) - **Note: Caching already implemented in T091**
-- [ ] T100 [US3] Create transformation rule storage in Cosmos DB transformation-rules container (CRUD operations, query by tenantId/providerId/enabled/priority)
+- [x] T099 [US3] Implement transformation rule caching in src/Transformations/TransformationEngine.cs ✅ (in-memory cache with 5-minute refresh already implemented in T091)
+- [x] T100 [US3] Create transformation rule storage in Cosmos DB transformation-rules container ✅ (CosmosTransformationRuleStorage.cs with CRUD operations, query by tenantId/providerId/enabled/priority, batch operations, updated schema indexing)
 - [ ] T101 [US3] Create example transformation rules in src/Transformations/Providers/SalesforceTransform.cs (Salesforce: group→role mapping patterns for Sales_Representative, Sales_Manager, etc.)
 - [ ] T102 [P] [US3] Create example transformation rules in src/Transformations/Providers/WorkdayTransform.cs (Workday: group→org_hierarchy patterns with level extraction)
 - [ ] T103 [P] [US3] Create example transformation rules in src/Transformations/Providers/ServiceNowTransform.cs (ServiceNow: group→group direct mapping, native group support)

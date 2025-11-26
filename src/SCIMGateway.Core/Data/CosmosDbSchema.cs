@@ -191,16 +191,27 @@ public class CosmosDbSchema
                 IncludedPaths =
                 [
                     "/tenantId/?",
-                    "/ruleId/?",
-                    "/sourceAttribute/?",
-                    "/targetAttribute/?",
-                    "/enabled/?"
+                    "/id/?",
+                    "/providerId/?",
+                    "/ruleType/?",
+                    "/sourcePattern/?",
+                    "/targetType/?",
+                    "/priority/?",
+                    "/enabled/?",
+                    "/createdAt/?",
+                    "/updatedAt/?"
                 ],
                 ExcludedPaths =
                 [
+                    "/metadata/*",
+                    "/examples/*",
                     "/_etag/?"
                 ],
-                CompositeIndexes = []
+                CompositeIndexes =
+                [
+                    ["/tenantId", "/providerId", "/priority"],
+                    ["/tenantId", "/providerId", "/enabled", "/priority"]
+                ]
             },
             "audit-logs" => new IndexingPolicyConfiguration
             {
@@ -252,7 +263,8 @@ public class CosmosDbSchema
             },
             "transformation-rules" => new UniqueKeyPolicyConfiguration
             {
-                UniqueKeyPaths = ["/ruleId"]
+                // id is already unique as the document ID; unique on providerId + sourcePattern per tenant
+                UniqueKeyPaths = ["/providerId", "/sourcePattern"]
             },
             "audit-logs" => new UniqueKeyPolicyConfiguration
             {
