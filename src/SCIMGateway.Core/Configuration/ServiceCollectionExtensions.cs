@@ -7,6 +7,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using SCIMGateway.Core.Auditing;
 using SCIMGateway.Core.Authentication;
+using SCIMGateway.Core.Concurrency;
 using SCIMGateway.Core.Data;
 using SCIMGateway.Core.Errors;
 using SCIMGateway.Core.Filtering;
@@ -50,6 +51,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IBearerTokenValidator, BearerTokenValidator>();
         services.AddScoped<ITenantResolver, TenantResolver>();
         services.AddSingleton<IRateLimiter, RateLimiter>();
+
+        // Concurrency (T050)
+        services.AddSingleton<IConcurrencyManager, ConcurrencyManager>();
 
         return services;
     }

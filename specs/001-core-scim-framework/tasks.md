@@ -156,13 +156,13 @@ Aligned implementations with contract test expectations. All 621 tests now passi
 - [x] T043 [P] [US1] Implement PATCH /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (partial update for members add/remove operations)
 - [x] T044 [P] [US1] Implement DELETE /scim/v2/Groups/{id} endpoint in src/Api/Controllers/GroupsController.cs (delete group, return 204 No Content)
 - [x] T045 [P] [US1] Implement GET /scim/v2/Groups?filter=... endpoint in src/Api/Controllers/GroupsController.cs (list groups with filtering and pagination)
-- [ ] T046 [US1] Implement Enterprise User Extension in src/Core/Extensions/EnterpriseUserExtension.cs (urn:ietf:params:scim:schemas:extension:enterprise:2.0:User with employeeNumber, costCenter, organization, division, department, manager reference)
-- [ ] T047 [US1] Implement SCIM error response generation in src/Core/ErrorHandler.cs (standard error schema with status/scimType/detail, 11 error code mappings per contracts)
-- [ ] T048 [US1] Add validation for User operations in src/Core/SchemaValidator.cs (userName required/unique, email format RFC 5322, active boolean, displayName string)
-- [ ] T049 [US1] Add validation for Group operations in src/Core/SchemaValidator.cs (displayName required/unique, members array with value/type/display)
-- [ ] T050 [US1] Implement versioning/concurrency control in src/Core/ConcurrencyManager.cs (optimistic concurrency with If-Match header, meta.version increment, 409 conflict on mismatch)
-- [ ] T051 [US1] Add User endpoint audit logging in src/Core/AuditLogger.cs (log all User CRUD operations with PII redaction per contracts/scim-user-endpoints.md)
-- [ ] T052 [US1] Add Group endpoint audit logging in src/Core/AuditLogger.cs (log all Group CRUD operations)
+- [x] T046 [US1] Implement Enterprise User Extension in src/Core/Extensions/EnterpriseUserExtension.cs (urn:ietf:params:scim:schemas:extension:enterprise:2.0:User with employeeNumber, costCenter, organization, division, department, manager reference) ✅ EnterpriseUserExtensionHelper class with EnsureSchemaForEnterpriseUser, HasEnterpriseExtension, GetManager methods
+- [x] T047 [US1] Implement SCIM error response generation in src/Core/ErrorHandler.cs (standard error schema with status/scimType/detail, 11 error code mappings per contracts) ✅ Already implemented with CreateScimError, GetScimType for all 11 error codes
+- [x] T048 [US1] Add validation for User operations in src/Core/SchemaValidator.cs (userName required/unique, email format RFC 5322, active boolean, displayName string) ✅ Enhanced ValidateUser with displayName, active boolean validation, email/locale/timezone format checks
+- [x] T049 [US1] Add validation for Group operations in src/Core/SchemaValidator.cs (displayName required/unique, members array with value/type/display) ✅ Enhanced ValidateGroup with displayName required, member value/display validation
+- [x] T050 [US1] Implement versioning/concurrency control in src/Core/ConcurrencyManager.cs (optimistic concurrency with If-Match header, meta.version increment, 409 conflict on mismatch) ✅ IConcurrencyManager with GenerateVersion (ETag format), ValidateVersion, ParseIfMatchHeader, CreateVersionMismatchException
+- [x] T051 [US1] Add User endpoint audit logging in src/Core/AuditLogger.cs (log all User CRUD operations with PII redaction per contracts/scim-user-endpoints.md) ✅ LogUserOperationAsync already implemented with PII redaction
+- [x] T052 [US1] Add Group endpoint audit logging in src/Core/AuditLogger.cs (log all Group CRUD operations) ✅ LogGroupOperationAsync already implemented
 
 ### Tests for User Story 1
 

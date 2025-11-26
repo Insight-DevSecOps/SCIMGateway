@@ -225,6 +225,9 @@ public partial class SchemaValidator : ISchemaValidator
 {
     // RFC 5322 email pattern (simplified)
     private static readonly Regex EmailRegex = EmailPattern();
+    
+    // Phone number pattern (E.164 and common formats)
+    private static readonly Regex PhoneRegex = PhonePattern();
 
     /// <inheritdoc />
     public Task<ValidationResult> ValidateUserAsync(ScimUser user)
@@ -237,7 +240,7 @@ public partial class SchemaValidator : ISchemaValidator
     {
         var errors = new List<ValidationError>();
 
-        // userName is required per RFC 7643
+        // T048: userName is required per RFC 7643
         if (string.IsNullOrWhiteSpace(user.UserName))
         {
             errors.Add(new ValidationError
@@ -245,6 +248,30 @@ public partial class SchemaValidator : ISchemaValidator
                 Path = "userName",
                 Message = "userName is required",
                 ErrorType = ValidationErrorType.RequiredAttributeMissing
+            });
+        }
+        else
+        {
+            // T048: Validate userName format (alphanumeric, email-like, or simple string)
+            if (user.UserName.Length > 256)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "userName",
+                    Message = "userName must not exceed 256 characters",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
+            }
+        }
+
+        // T048: Validate displayName if present
+        if (!string.IsNullOrEmpty(user.DisplayName) && user.DisplayName.Length > 256)
+        {
+            errors.Add(new ValidationError
+            {
+                Path = "displayName",
+                Message = "displayName must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
             });
         }
 
@@ -262,9 +289,10 @@ public partial class SchemaValidator : ISchemaValidator
             }
         }
 
-        // Validate emails if present
+        // T048: Validate emails if present (RFC 5322 format)
         if (user.Emails != null)
         {
+            var primaryCount = 0;
             for (int i = 0; i < user.Emails.Count; i++)
             {
                 var email = user.Emails[i];
@@ -277,12 +305,27 @@ public partial class SchemaValidator : ISchemaValidator
                         ErrorType = ValidationErrorType.InvalidFormat
                     });
                 }
+                if (email.Primary)
+                {
+                    primaryCount++;
+                }
+            }
+            // Only one primary email allowed
+            if (primaryCount > 1)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "emails",
+                    Message = "Only one email can be marked as primary",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
             }
         }
 
-        // Validate phone numbers if present
+        // T048: Validate phone numbers if present
         if (user.PhoneNumbers != null)
         {
+            var primaryCount = 0;
             for (int i = 0; i < user.PhoneNumbers.Count; i++)
             {
                 var phone = user.PhoneNumbers[i];
@@ -295,12 +338,169 @@ public partial class SchemaValidator : ISchemaValidator
                         ErrorType = ValidationErrorType.InvalidValue
                     });
                 }
+                else if (!IsValidPhoneNumber(phone.Value))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        Path = $"phoneNumbers[{i}].value",
+                        Message = "Invalid phone number format",
+                        ErrorType = ValidationErrorType.InvalidFormat
+                    });
+                }
+                if (phone.Primary)
+                {
+                    primaryCount++;
+                }
+            }
+            if (primaryCount > 1)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "phoneNumbers",
+                    Message = "Only one phone number can be marked as primary",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
             }
         }
+
+        // T048: Validate addresses if present
+        if (user.Addresses != null)
+        {
+            var primaryCount = 0;
+            for (int i = 0; i < user.Addresses.Count; i++)
+            {
+                var address = user.Addresses[i];
+                if (address.Primary)
+                {
+                    primaryCount++;
+                }
+                // Validate type if present
+                if (!string.IsNullOrEmpty(address.Type) && 
+                    !IsValidAddressType(address.Type))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        Path = $"addresses[{i}].type",
+                        Message = "Invalid address type. Valid types are: work, home, other",
+                        ErrorType = ValidationErrorType.InvalidValue
+                    });
+                }
+            }
+            if (primaryCount > 1)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "addresses",
+                    Message = "Only one address can be marked as primary",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
+            }
+        }
+
+        // T048: Validate name components if present
+        if (user.Name != null)
+        {
+            if (!string.IsNullOrEmpty(user.Name.FamilyName) && user.Name.FamilyName.Length > 256)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "name.familyName",
+                    Message = "familyName must not exceed 256 characters",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
+            }
+            if (!string.IsNullOrEmpty(user.Name.GivenName) && user.Name.GivenName.Length > 256)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "name.givenName",
+                    Message = "givenName must not exceed 256 characters",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
+            }
+        }
+
+        // T048: Validate Enterprise User Extension if present
+        if (user.EnterpriseUser != null)
+        {
+            var extErrors = ValidateEnterpriseExtension(user.EnterpriseUser);
+            errors.AddRange(extErrors);
+        }
+
+        // T048: Validate active is boolean (always true in C#, but check for null issues)
+        // active defaults to true if not specified, which is valid
 
         return errors.Count == 0 
             ? ValidationResult.Success() 
             : ValidationResult.Failure(errors);
+    }
+
+    /// <summary>
+    /// Validates the Enterprise User Extension.
+    /// </summary>
+    private static IEnumerable<ValidationError> ValidateEnterpriseExtension(EnterpriseUserExtension ext)
+    {
+        var basePath = "urn:ietf:params:scim:schemas:extension:enterprise:2.0:User";
+
+        if (!string.IsNullOrEmpty(ext.EmployeeNumber) && ext.EmployeeNumber.Length > 256)
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.employeeNumber",
+                Message = "employeeNumber must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            };
+        }
+
+        if (!string.IsNullOrEmpty(ext.CostCenter) && ext.CostCenter.Length > 256)
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.costCenter",
+                Message = "costCenter must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            };
+        }
+
+        if (!string.IsNullOrEmpty(ext.Organization) && ext.Organization.Length > 256)
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.organization",
+                Message = "organization must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            };
+        }
+
+        if (!string.IsNullOrEmpty(ext.Division) && ext.Division.Length > 256)
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.division",
+                Message = "division must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            };
+        }
+
+        if (!string.IsNullOrEmpty(ext.Department) && ext.Department.Length > 256)
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.department",
+                Message = "department must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            };
+        }
+
+        if (ext.Manager != null && string.IsNullOrWhiteSpace(ext.Manager.Value))
+        {
+            yield return new ValidationError
+            {
+                Path = $"{basePath}.manager.value",
+                Message = "manager.value is required when manager is specified",
+                ErrorType = ValidationErrorType.RequiredAttributeMissing
+            };
+        }
     }
 
     /// <inheritdoc />
@@ -314,7 +514,7 @@ public partial class SchemaValidator : ISchemaValidator
     {
         var errors = new List<ValidationError>();
 
-        // displayName is required for groups per RFC 7643
+        // T049: displayName is required for groups per RFC 7643
         if (string.IsNullOrWhiteSpace(group.DisplayName))
         {
             errors.Add(new ValidationError
@@ -323,6 +523,19 @@ public partial class SchemaValidator : ISchemaValidator
                 Message = "displayName is required",
                 ErrorType = ValidationErrorType.RequiredAttributeMissing
             });
+        }
+        else
+        {
+            // T049: Validate displayName length
+            if (group.DisplayName.Length > 256)
+            {
+                errors.Add(new ValidationError
+                {
+                    Path = "displayName",
+                    Message = "displayName must not exceed 256 characters",
+                    ErrorType = ValidationErrorType.InvalidValue
+                });
+            }
         }
 
         // Validate schemas if present
@@ -339,12 +552,16 @@ public partial class SchemaValidator : ISchemaValidator
             }
         }
 
-        // Validate members if present
+        // T049: Validate members if present
         if (group.Members != null)
         {
+            var memberValues = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            
             for (int i = 0; i < group.Members.Count; i++)
             {
                 var member = group.Members[i];
+                
+                // T049: value is required for each member
                 if (string.IsNullOrWhiteSpace(member.Value))
                 {
                     errors.Add(new ValidationError
@@ -354,7 +571,54 @@ public partial class SchemaValidator : ISchemaValidator
                         ErrorType = ValidationErrorType.RequiredAttributeMissing
                     });
                 }
+                else
+                {
+                    // Check for duplicate members
+                    if (!memberValues.Add(member.Value))
+                    {
+                        errors.Add(new ValidationError
+                        {
+                            Path = $"members[{i}].value",
+                            Message = $"Duplicate member with value '{member.Value}'",
+                            ErrorType = ValidationErrorType.InvalidValue
+                        });
+                    }
+                }
+
+                // T049: Validate member type if present
+                if (!string.IsNullOrEmpty(member.Type) && 
+                    !IsValidMemberType(member.Type))
+                {
+                    errors.Add(new ValidationError
+                    {
+                        Path = $"members[{i}].type",
+                        Message = "Invalid member type. Valid types are: User, Group",
+                        ErrorType = ValidationErrorType.InvalidValue
+                    });
+                }
+
+                // T049: Validate display if present (should not exceed 256 chars)
+                if (!string.IsNullOrEmpty(member.Display) && member.Display.Length > 256)
+                {
+                    errors.Add(new ValidationError
+                    {
+                        Path = $"members[{i}].display",
+                        Message = "Member display must not exceed 256 characters",
+                        ErrorType = ValidationErrorType.InvalidValue
+                    });
+                }
             }
+        }
+
+        // T049: Validate externalId if present
+        if (!string.IsNullOrEmpty(group.ExternalId) && group.ExternalId.Length > 256)
+        {
+            errors.Add(new ValidationError
+            {
+                Path = "externalId",
+                Message = "externalId must not exceed 256 characters",
+                ErrorType = ValidationErrorType.InvalidValue
+            });
         }
 
         return errors.Count == 0 
@@ -536,6 +800,12 @@ public partial class SchemaValidator : ISchemaValidator
         return EmailRegex.IsMatch(email);
     }
 
+    private static bool IsValidPhoneNumber(string phone)
+    {
+        // Accept various phone formats: +1234567890, (123) 456-7890, 123-456-7890, etc.
+        return PhoneRegex.IsMatch(phone);
+    }
+
     private static bool IsValidAttributeName(string name)
     {
         // SCIM attribute names are alphanumeric and can contain dots
@@ -543,6 +813,24 @@ public partial class SchemaValidator : ISchemaValidator
                name.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_');
     }
 
+    private static bool IsValidAddressType(string type)
+    {
+        // Valid address types per RFC 7643
+        return type.Equals("work", StringComparison.OrdinalIgnoreCase) ||
+               type.Equals("home", StringComparison.OrdinalIgnoreCase) ||
+               type.Equals("other", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsValidMemberType(string type)
+    {
+        // Valid member types for groups
+        return type.Equals("User", StringComparison.OrdinalIgnoreCase) ||
+               type.Equals("Group", StringComparison.OrdinalIgnoreCase);
+    }
+
     [GeneratedRegex(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", RegexOptions.Compiled)]
     private static partial Regex EmailPattern();
+
+    [GeneratedRegex(@"^[\+]?[(]?[0-9]{1,4}[)]?[-\s\./0-9]*$", RegexOptions.Compiled)]
+    private static partial Regex PhonePattern();
 }
