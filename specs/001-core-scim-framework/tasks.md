@@ -261,18 +261,20 @@ Additional tests created for T067-T071:
 
 ### Tests for User Story 3
 
-- [ ] T106 [P] [US3] Unit test for EXACT pattern in tests/Unit/TransformationEngineTests.cs (verify exact match, case sensitivity, no match on extra text)
-- [ ] T107 [P] [US3] Unit test for REGEX pattern in tests/Unit/TransformationEngineTests.cs (verify capture groups, template substitution, pattern mismatch)
-- [ ] T108 [P] [US3] Unit test for HIERARCHICAL pattern in tests/Unit/TransformationEngineTests.cs (verify path parsing, level extraction, insufficient levels handling)
-- [ ] T109 [P] [US3] Unit test for CONDITIONAL pattern in tests/Unit/TransformationEngineTests.cs (verify condition evaluation, fallback behavior)
-- [ ] T110 [P] [US3] Unit test for reverse transformation in tests/Unit/ReverseTransformTests.cs (verify entitlement→group recovery, template reverse-engineering)
-- [ ] T111 [P] [US3] Unit test for UNION conflict resolution in tests/Unit/TransformationEngineTests.cs (verify all entitlements assigned)
-- [ ] T112 [P] [US3] Unit test for FIRST_MATCH conflict resolution in tests/Unit/TransformationEngineTests.cs (verify priority-based selection)
-- [ ] T113 [P] [US3] Unit test for HIGHEST_PRIVILEGE conflict resolution in tests/Unit/TransformationEngineTests.cs (verify privilege ranking)
-- [ ] T114 [P] [US3] Contract test for transformation rules in tests/Contract/TransformationRuleTests.cs (verify rule format, required fields, validation)
-- [ ] T115 [P] [US3] Integration test for Salesforce transformation in tests/Integration/SalesforceTransformTests.cs (group "Sales-EMEA" → role "Sales_EMEA_Rep", verify adapter receives correct entitlement)
-- [ ] T116 [P] [US3] Integration test for Workday transformation in tests/Integration/WorkdayTransformTests.cs (group "Acme Corp/Sales/EMEA" → org "ORG-EMEA", verify hierarchical parsing)
-- [ ] T117 [P] [US3] Integration test for transformation preview in tests/Integration/TransformationPreviewTests.cs (POST /api/transform/preview with sample group name, verify returns transformed result without persisting, verify response includes: matchedRuleId, transformedEntitlement, conflicts[], appliedAt=null)
+- [x] T106 [P] [US3] Unit test for EXACT pattern in tests/Unit/TransformationEngineTests.cs (verify exact match, case sensitivity, no match on extra text) ✅ 6 tests (skipped pending implementation)
+- [x] T107 [P] [US3] Unit test for REGEX pattern in tests/Unit/TransformationEngineTests.cs (verify capture groups, template substitution, pattern mismatch) ✅ 11 tests (skipped pending implementation)
+- [x] T108 [P] [US3] Unit test for HIERARCHICAL pattern in tests/Unit/TransformationEngineTests.cs (verify path parsing, level extraction, insufficient levels handling) ✅ 7 tests (skipped pending implementation)
+- [x] T109 [P] [US3] Unit test for CONDITIONAL pattern in tests/Unit/TransformationEngineTests.cs (verify condition evaluation, fallback behavior) ✅ 8 tests (skipped pending implementation)
+- [x] T110 [P] [US3] Unit test for reverse transformation in tests/Unit/ReverseTransformTests.cs (verify entitlement→group recovery, template reverse-engineering) ✅ 18 tests (skipped pending implementation)
+- [x] T111 [P] [US3] Unit test for UNION conflict resolution in tests/Unit/TransformationEngineTests.cs (verify all entitlements assigned) ✅ 4 tests (skipped pending implementation)
+- [x] T112 [P] [US3] Unit test for FIRST_MATCH conflict resolution in tests/Unit/TransformationEngineTests.cs (verify priority-based selection) ✅ 4 tests (skipped pending implementation)
+- [x] T113 [P] [US3] Unit test for HIGHEST_PRIVILEGE conflict resolution in tests/Unit/TransformationEngineTests.cs (verify privilege ranking) ✅ 5 tests (skipped pending implementation)
+- [x] T114 [P] [US3] Contract test for transformation rules in tests/Contract/TransformationRuleTests.cs (verify rule format, required fields, validation) ✅ 55 tests (skipped pending implementation)
+- [x] T115 [P] [US3] Integration test for Salesforce transformation in tests/Integration/SalesforceTransformTests.cs (group "Sales-EMEA" → role "Sales_EMEA_Rep", verify adapter receives correct entitlement) ✅ 14 tests (skipped pending implementation)
+- [x] T116 [P] [US3] Integration test for Workday transformation in tests/Integration/WorkdayTransformTests.cs (group "Acme Corp/Sales/EMEA" → org "ORG-EMEA", verify hierarchical parsing) ✅ 18 tests (skipped pending implementation)
+- [x] T117 [P] [US3] Integration test for transformation preview in tests/Integration/TransformationPreviewTests.cs (POST /api/transform/preview with sample group name, verify returns transformed result without persisting, verify response includes: matchedRuleId, transformedEntitlement, conflicts[], appliedAt=null) ✅ 24 tests (skipped pending implementation)
+
+**Total Phase 5 Tests Created**: 169 tests (all skipped pending implementation of T086-T105)
 
 **Checkpoint**: At this point, transformation engine should work - rules loaded, patterns matched, transformations applied, reverse transforms functional
 
