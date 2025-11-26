@@ -49,7 +49,7 @@ public class AdapterInterfaceTests
 
     // ==================== Interface Existence ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Interface_Should_Exist()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -58,7 +58,7 @@ public class AdapterInterfaceTests
 
     // ==================== Properties ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_AdapterId_Property()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -70,7 +70,7 @@ public class AdapterInterfaceTests
         Assert.True(property.CanRead, "AdapterId should have a getter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_ProviderName_Property()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -82,7 +82,7 @@ public class AdapterInterfaceTests
         Assert.True(property.CanRead, "ProviderName should have a getter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_Configuration_Property()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -93,7 +93,7 @@ public class AdapterInterfaceTests
         Assert.True(property.CanRead, "Configuration should have a getter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_HealthStatus_Property()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -106,7 +106,7 @@ public class AdapterInterfaceTests
 
     // ==================== User Operations ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_CreateUserAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -122,7 +122,7 @@ public class AdapterInterfaceTests
         Assert.Contains("ScimUser", parameters[0].ParameterType.Name);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_GetUserAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -137,7 +137,7 @@ public class AdapterInterfaceTests
         Assert.Equal(typeof(string), parameters[0].ParameterType);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_UpdateUserAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -152,7 +152,7 @@ public class AdapterInterfaceTests
         Assert.Equal(typeof(string), parameters[0].ParameterType);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_DeleteUserAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -167,7 +167,7 @@ public class AdapterInterfaceTests
         Assert.Equal(typeof(string), parameters[0].ParameterType);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_ListUsersAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -183,7 +183,7 @@ public class AdapterInterfaceTests
 
     // ==================== Group Operations ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_CreateGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -197,7 +197,7 @@ public class AdapterInterfaceTests
         Assert.True(parameters.Length >= 1, "CreateGroupAsync should have at least 1 parameter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_GetGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -212,7 +212,7 @@ public class AdapterInterfaceTests
         Assert.Equal(typeof(string), parameters[0].ParameterType);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_UpdateGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -226,7 +226,7 @@ public class AdapterInterfaceTests
         Assert.True(parameters.Length >= 2, "UpdateGroupAsync should have at least 2 parameters");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_DeleteGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -240,7 +240,7 @@ public class AdapterInterfaceTests
         Assert.True(parameters.Length >= 1, "DeleteGroupAsync should have at least 1 parameter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_ListGroupsAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -253,7 +253,7 @@ public class AdapterInterfaceTests
 
     // ==================== Membership Operations ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_AddUserToGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -269,7 +269,7 @@ public class AdapterInterfaceTests
         Assert.Equal(typeof(string), parameters[1].ParameterType);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_RemoveUserFromGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -283,7 +283,7 @@ public class AdapterInterfaceTests
         Assert.True(parameters.Length >= 2, "RemoveUserFromGroupAsync should have groupId and userId parameters");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_GetGroupMembersAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -299,7 +299,7 @@ public class AdapterInterfaceTests
 
     // ==================== Transformation Operations ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_MapGroupToEntitlementAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -313,7 +313,7 @@ public class AdapterInterfaceTests
         Assert.True(parameters.Length >= 1, "MapGroupToEntitlementAsync should have group parameter");
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_MapEntitlementToGroupAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -329,7 +329,7 @@ public class AdapterInterfaceTests
 
     // ==================== Health & Diagnostics ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_CheckHealthAsync_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -340,7 +340,7 @@ public class AdapterInterfaceTests
         Assert.Contains("Task", method.ReturnType.Name);
     }
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_GetCapabilities_Method()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -354,7 +354,7 @@ public class AdapterInterfaceTests
 
     // ==================== Method Count Validation ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Should_Have_18_Required_Methods()
     {
         var adapterInterface = GetAdapterInterfaceType();
@@ -376,7 +376,7 @@ public class AdapterInterfaceTests
 
     // ==================== CancellationToken Support ====================
 
-    [Fact(Skip = "Waiting for T066 implementation")]
+    [Fact]
     public void IAdapter_Async_Methods_Should_Support_CancellationToken()
     {
         var adapterInterface = GetAdapterInterfaceType();

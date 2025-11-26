@@ -44,14 +44,14 @@ public class AdapterExceptionTests
 
     // ==================== AdapterException Structure ====================
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Exist()
     {
         var exceptionType = GetAdapterExceptionType();
         Assert.NotNull(exceptionType);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Inherit_From_Exception()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -59,7 +59,7 @@ public class AdapterExceptionTests
         Assert.True(typeof(Exception).IsAssignableFrom(exceptionType));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_ProviderName_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -70,7 +70,7 @@ public class AdapterExceptionTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_HttpStatusCode_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -82,7 +82,7 @@ public class AdapterExceptionTests
         Assert.True(property.PropertyType == typeof(int?) || property.PropertyType == typeof(int));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_ProviderErrorCode_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -93,7 +93,7 @@ public class AdapterExceptionTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_ScimErrorType_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -103,7 +103,7 @@ public class AdapterExceptionTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_IsRetryable_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -114,7 +114,7 @@ public class AdapterExceptionTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_RetryAfterSeconds_Property()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -126,7 +126,7 @@ public class AdapterExceptionTests
 
     // ==================== ScimErrorType Enum ====================
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Enum_Should_Exist()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -134,7 +134,7 @@ public class AdapterExceptionTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_InvalidSyntax()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -142,7 +142,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("InvalidSyntax"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_Uniqueness()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -150,7 +150,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("Uniqueness"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_Mutability()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -158,7 +158,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("Mutability"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_InvalidFilter()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -166,7 +166,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("InvalidFilter"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_NoTarget()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -174,7 +174,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("NoTarget"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_TooMany()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -182,7 +182,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("TooMany"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_ServerUnavailable()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -190,7 +190,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("ServerUnavailable"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_ResourceNotFound()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -198,7 +198,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("ResourceNotFound"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_Unauthorized()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -206,7 +206,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("Unauthorized"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_Forbidden()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -214,7 +214,7 @@ public class AdapterExceptionTests
         Assert.True(Enum.GetNames(enumType).Contains("Forbidden"));
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void ScimErrorType_Should_Have_All_Required_Values()
     {
         var enumType = GetScimErrorTypeEnum();
@@ -236,7 +236,7 @@ public class AdapterExceptionTests
 
     // ==================== Constructor Tests ====================
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_Constructor_With_Message_And_ProviderName()
     {
         var exceptionType = GetAdapterExceptionType();
@@ -246,7 +246,7 @@ public class AdapterExceptionTests
         Assert.NotNull(constructor);
     }
 
-    [Fact(Skip = "Waiting for T072 implementation")]
+    [Fact]
     public void AdapterException_Should_Have_Constructor_With_InnerException()
     {
         var exceptionType = GetAdapterExceptionType();

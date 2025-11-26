@@ -45,14 +45,14 @@ public class AdapterBaseTests
 
     // ==================== Class Structure ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Exist()
     {
         var baseType = GetAdapterBaseType();
         Assert.NotNull(baseType);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Be_Abstract()
     {
         var baseType = GetAdapterBaseType();
@@ -60,7 +60,7 @@ public class AdapterBaseTests
         Assert.True(baseType.IsAbstract);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Implement_IAdapter()
     {
         var baseType = GetAdapterBaseType();
@@ -73,7 +73,7 @@ public class AdapterBaseTests
 
     // ==================== Properties ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_AdapterId_Property()
     {
         var baseType = GetAdapterBaseType();
@@ -84,7 +84,7 @@ public class AdapterBaseTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_ProviderName_Property()
     {
         var baseType = GetAdapterBaseType();
@@ -95,7 +95,7 @@ public class AdapterBaseTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Configuration_Property()
     {
         var baseType = GetAdapterBaseType();
@@ -105,7 +105,7 @@ public class AdapterBaseTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_HealthStatus_Property()
     {
         var baseType = GetAdapterBaseType();
@@ -117,7 +117,7 @@ public class AdapterBaseTests
 
     // ==================== Helper Methods ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_GetAccessTokenAsync_Method()
     {
         var baseType = GetAdapterBaseType();
@@ -129,7 +129,7 @@ public class AdapterBaseTests
         Assert.Contains("Task", method.ReturnType.Name);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_TranslateError_Method()
     {
         var baseType = GetAdapterBaseType();
@@ -140,7 +140,7 @@ public class AdapterBaseTests
         Assert.NotNull(method);
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_LogOperation_Method()
     {
         var baseType = GetAdapterBaseType();
@@ -153,7 +153,7 @@ public class AdapterBaseTests
 
     // ==================== Abstract Methods ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Abstract_CreateUserAsync()
     {
         var baseType = GetAdapterBaseType();
@@ -164,7 +164,7 @@ public class AdapterBaseTests
         Assert.True(method.IsAbstract, "CreateUserAsync should be abstract");
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Abstract_GetUserAsync()
     {
         var baseType = GetAdapterBaseType();
@@ -175,7 +175,7 @@ public class AdapterBaseTests
         Assert.True(method.IsAbstract, "GetUserAsync should be abstract");
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Abstract_UpdateUserAsync()
     {
         var baseType = GetAdapterBaseType();
@@ -186,7 +186,7 @@ public class AdapterBaseTests
         Assert.True(method.IsAbstract, "UpdateUserAsync should be abstract");
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Abstract_DeleteUserAsync()
     {
         var baseType = GetAdapterBaseType();
@@ -197,7 +197,7 @@ public class AdapterBaseTests
         Assert.True(method.IsAbstract, "DeleteUserAsync should be abstract");
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Abstract_ListUsersAsync()
     {
         var baseType = GetAdapterBaseType();
@@ -210,7 +210,7 @@ public class AdapterBaseTests
 
     // ==================== Constructor ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Have_Protected_Constructor()
     {
         var baseType = GetAdapterBaseType();
@@ -228,7 +228,7 @@ public class AdapterBaseTests
 
     // ==================== Dependencies ====================
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Accept_ILogger_Dependency()
     {
         var baseType = GetAdapterBaseType();
@@ -242,7 +242,7 @@ public class AdapterBaseTests
         Assert.True(hasLoggerParam, "AdapterBase should accept ILogger dependency");
     }
 
-    [Fact(Skip = "Waiting for T073 implementation")]
+    [Fact]
     public void AdapterBase_Should_Accept_IHttpClientFactory_Dependency()
     {
         var baseType = GetAdapterBaseType();

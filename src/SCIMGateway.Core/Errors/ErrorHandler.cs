@@ -120,7 +120,47 @@ public enum ScimErrorType
     /// <summary>
     /// Sensitive attribute cannot be returned (400).
     /// </summary>
-    Sensitive
+    Sensitive,
+
+    /// <summary>
+    /// The server is not in a state to process the request (503).
+    /// </summary>
+    ServerUnavailable,
+
+    /// <summary>
+    /// The requested resource was not found (404).
+    /// </summary>
+    ResourceNotFound,
+
+    /// <summary>
+    /// Authorization failure - invalid credentials or token (401).
+    /// </summary>
+    Unauthorized,
+
+    /// <summary>
+    /// The client is not authorized to perform the requested operation (403).
+    /// </summary>
+    Forbidden,
+
+    /// <summary>
+    /// An internal server error occurred (500).
+    /// </summary>
+    InternalError,
+
+    /// <summary>
+    /// Rate limit exceeded (429).
+    /// </summary>
+    RateLimitExceeded,
+
+    /// <summary>
+    /// Request timeout (408).
+    /// </summary>
+    Timeout,
+
+    /// <summary>
+    /// Unknown or unspecified error type.
+    /// </summary>
+    Unknown
 }
 
 /// <summary>

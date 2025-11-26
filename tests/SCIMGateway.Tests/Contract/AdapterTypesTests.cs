@@ -31,14 +31,14 @@ public class AdapterTypesTests
 
     // ==================== T068: QueryFilter ====================
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Exist()
     {
         var filterType = GetTypeByName("QueryFilter");
         Assert.NotNull(filterType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_Filter_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -49,7 +49,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_Attributes_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -60,7 +60,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_ExcludedAttributes_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -70,7 +70,7 @@ public class AdapterTypesTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_SortBy_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -81,7 +81,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(string), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_SortOrder_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -91,7 +91,7 @@ public class AdapterTypesTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_StartIndex_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -102,7 +102,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Should_Have_Count_Property()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -113,7 +113,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_StartIndex_Should_Default_To_1()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -125,7 +125,7 @@ public class AdapterTypesTests
         Assert.Equal(1, value);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void QueryFilter_Count_Should_Default_To_100()
     {
         var filterType = GetTypeByName("QueryFilter");
@@ -139,7 +139,7 @@ public class AdapterTypesTests
 
     // ==================== T068: SortOrder Enum ====================
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void SortOrder_Enum_Should_Exist()
     {
         var sortOrderType = GetTypeByName("SortOrder");
@@ -147,7 +147,7 @@ public class AdapterTypesTests
         Assert.True(sortOrderType.IsEnum);
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void SortOrder_Should_Have_Ascending_Value()
     {
         var sortOrderType = GetTypeByName("SortOrder");
@@ -155,7 +155,7 @@ public class AdapterTypesTests
         Assert.Contains("Ascending", Enum.GetNames(sortOrderType));
     }
 
-    [Fact(Skip = "Waiting for T068 implementation")]
+    [Fact]
     public void SortOrder_Should_Have_Descending_Value()
     {
         var sortOrderType = GetTypeByName("SortOrder");
@@ -165,14 +165,14 @@ public class AdapterTypesTests
 
     // ==================== T069: PagedResult ====================
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Exist()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
         Assert.NotNull(pagedResultType);
     }
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Be_Generic()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
@@ -180,7 +180,7 @@ public class AdapterTypesTests
         Assert.True(pagedResultType.IsGenericType || pagedResultType.IsGenericTypeDefinition);
     }
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Have_Resources_Property()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
@@ -190,7 +190,7 @@ public class AdapterTypesTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Have_TotalResults_Property()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
@@ -201,7 +201,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Have_StartIndex_Property()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
@@ -212,7 +212,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T069 implementation")]
+    [Fact]
     public void PagedResult_Should_Have_ItemsPerPage_Property()
     {
         var pagedResultType = GetTypeByName("PagedResult`1");
@@ -225,14 +225,14 @@ public class AdapterTypesTests
 
     // ==================== T070: AdapterHealthStatus ====================
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Exist()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
         Assert.NotNull(healthType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_Status_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -242,7 +242,7 @@ public class AdapterTypesTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_LastChecked_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -253,7 +253,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(DateTime), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_IsConnected_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -264,7 +264,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_IsAuthenticated_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -275,7 +275,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_ResponseTimeMs_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -286,7 +286,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(double), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void AdapterHealthStatus_Should_Have_ErrorRate_Property()
     {
         var healthType = GetTypeByName("AdapterHealthStatus");
@@ -297,7 +297,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(double), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void HealthStatusLevel_Enum_Should_Exist()
     {
         var enumType = GetTypeByName("HealthStatusLevel");
@@ -305,7 +305,7 @@ public class AdapterTypesTests
         Assert.True(enumType.IsEnum);
     }
 
-    [Fact(Skip = "Waiting for T070 implementation")]
+    [Fact]
     public void HealthStatusLevel_Should_Have_Required_Values()
     {
         var enumType = GetTypeByName("HealthStatusLevel");
@@ -320,14 +320,14 @@ public class AdapterTypesTests
 
     // ==================== T071: AdapterCapabilities ====================
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Exist()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
         Assert.NotNull(capabilitiesType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsUsers_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -338,7 +338,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsGroups_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -349,7 +349,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsFiltering_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -360,7 +360,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsSorting_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -371,7 +371,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsPagination_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -382,7 +382,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsPatch_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -393,7 +393,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsBulk_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -404,7 +404,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportsEnterpriseExtension_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -415,7 +415,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(bool), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_MaxPageSize_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -426,7 +426,7 @@ public class AdapterTypesTests
         Assert.Equal(typeof(int), property.PropertyType);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportedFilterOperators_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -436,7 +436,7 @@ public class AdapterTypesTests
         Assert.NotNull(property);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_Should_Have_SupportedAuthMethods_Property()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -448,7 +448,7 @@ public class AdapterTypesTests
 
     // ==================== Default Values ====================
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_SupportsUsers_Should_Default_To_True()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
@@ -460,7 +460,7 @@ public class AdapterTypesTests
         Assert.Equal(true, value);
     }
 
-    [Fact(Skip = "Waiting for T071 implementation")]
+    [Fact]
     public void AdapterCapabilities_MaxPageSize_Should_Default_To_100()
     {
         var capabilitiesType = GetTypeByName("AdapterCapabilities");
