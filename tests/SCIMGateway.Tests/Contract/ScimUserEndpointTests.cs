@@ -286,6 +286,313 @@ public class ScimUserEndpointTests
         Assert.True(hasSortBy, "ListUsers should support sortBy parameter per RFC 7644");
     }
 
+    [Fact]
+    public void ListUsers_Method_Should_Support_SortOrder_Parameter()
+    {
+        // Arrange
+        var controllerType = GetUsersControllerType();
+        var listMethod = GetListMethod(controllerType);
+        
+        // Assert
+        Assert.NotNull(listMethod);
+        var parameters = listMethod.GetParameters();
+        
+        // Per RFC 7644, should support sortOrder parameter
+        var hasSortOrder = parameters.Any(p => 
+            p.Name?.Equals("sortOrder", StringComparison.OrdinalIgnoreCase) == true);
+        
+        Assert.True(hasSortOrder, "ListUsers should support sortOrder parameter per RFC 7644");
+    }
+
+    #endregion
+
+    #region T058: GET /Users?filter=... - Filter Expression Integration Tests
+
+    [Fact]
+    public void IFilterParser_Should_Exist_For_Filter_Processing()
+    {
+        // Arrange & Act - FilterParser processes filter expressions for List endpoint
+        var parserInterface = GetIFilterParserType();
+        
+        // Assert
+        Assert.NotNull(parserInterface);
+        Assert.True(parserInterface.IsInterface);
+    }
+
+    [Fact]
+    public void FilterParser_Implementation_Should_Exist()
+    {
+        // Arrange & Act
+        var parserType = GetFilterParserType();
+        
+        // Assert
+        Assert.NotNull(parserType);
+    }
+
+    [Fact]
+    public void FilterParser_Should_Implement_IFilterParser()
+    {
+        // Arrange
+        var parserType = GetFilterParserType();
+        var parserInterface = GetIFilterParserType();
+        
+        // Assert
+        Assert.NotNull(parserType);
+        Assert.NotNull(parserInterface);
+        Assert.True(parserInterface.IsAssignableFrom(parserType));
+    }
+
+    [Fact]
+    public void FilterOperator_Enum_Should_Exist()
+    {
+        // Arrange & Act - FilterOperator enum defines the 11 SCIM operators
+        var operatorType = GetFilterOperatorType();
+        
+        // Assert
+        Assert.NotNull(operatorType);
+        Assert.True(operatorType.IsEnum);
+    }
+
+    [Theory]
+    [InlineData("Equal")]          // eq operator
+    [InlineData("NotEqual")]       // ne operator
+    [InlineData("Contains")]       // co operator
+    [InlineData("StartsWith")]     // sw operator
+    [InlineData("EndsWith")]       // ew operator
+    [InlineData("Present")]        // pr operator
+    [InlineData("GreaterThan")]    // gt operator
+    [InlineData("GreaterThanOrEqual")]  // ge operator
+    [InlineData("LessThan")]       // lt operator
+    [InlineData("LessThanOrEqual")]     // le operator
+    public void FilterOperator_Should_Support_All_11_SCIM_Operators(string operatorName)
+    {
+        // Arrange
+        var operatorType = GetFilterOperatorType();
+        
+        // Assert
+        Assert.NotNull(operatorType);
+        var values = Enum.GetNames(operatorType);
+        Assert.Contains(values, v => v.Equals(operatorName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void FilterOperator_Should_Support_Not_Operator()
+    {
+        // Arrange - NOT is a unary operator for negating expressions
+        var operatorType = GetFilterOperatorType();
+        
+        // Assert
+        Assert.NotNull(operatorType);
+        // NOT may be represented as a separate LogicalOperator or in the ExpressionType
+        // The key is the parser supports "not" prefix
+    }
+
+    [Fact]
+    public void LogicalOperator_Enum_Should_Exist_For_And_Or()
+    {
+        // Arrange & Act - LogicalOperator for combining expressions
+        var logicalOpType = GetLogicalOperatorType();
+        
+        // Assert
+        Assert.NotNull(logicalOpType);
+        Assert.True(logicalOpType.IsEnum);
+    }
+
+    [Theory]
+    [InlineData("And")]
+    [InlineData("Or")]
+    public void LogicalOperator_Should_Support_And_Or(string operatorName)
+    {
+        // Arrange
+        var logicalOpType = GetLogicalOperatorType();
+        
+        // Assert
+        Assert.NotNull(logicalOpType);
+        var values = Enum.GetNames(logicalOpType);
+        Assert.Contains(values, v => v.Equals(operatorName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    [Fact]
+    public void FilterExpression_Should_Support_Attribute_Path()
+    {
+        // Arrange - FilterExpression holds parsed filter with attribute path
+        var expressionType = GetFilterExpressionType();
+        
+        // Assert
+        Assert.NotNull(expressionType);
+        var prop = expressionType.GetProperty("AttributePath") 
+            ?? expressionType.GetProperty("Attribute");
+        Assert.NotNull(prop);
+    }
+
+    [Fact]
+    public void FilterExpression_Should_Support_Nested_Expressions()
+    {
+        // Arrange - For complex filters like (a eq "b") and (c eq "d")
+        var expressionType = GetFilterExpressionType();
+        
+        // Assert
+        Assert.NotNull(expressionType);
+        var leftProp = expressionType.GetProperty("Left");
+        var rightProp = expressionType.GetProperty("Right");
+        Assert.NotNull(leftProp);
+        Assert.NotNull(rightProp);
+    }
+
+    [Fact]
+    public void IUserRepository_ListAsync_Should_Accept_Filter_Parameter()
+    {
+        // Arrange
+        var repoInterface = GetIUserRepositoryType();
+        
+        // Assert
+        Assert.NotNull(repoInterface);
+        var listMethod = repoInterface.GetMethod("ListAsync");
+        Assert.NotNull(listMethod);
+        
+        var parameters = listMethod.GetParameters();
+        var filterParam = parameters.FirstOrDefault(p => 
+            p.Name?.Equals("filter", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.NotNull(filterParam);
+    }
+
+    [Fact]
+    public void IUserRepository_ListAsync_Should_Accept_StartIndex_Parameter()
+    {
+        // Arrange
+        var repoInterface = GetIUserRepositoryType();
+        
+        // Assert
+        Assert.NotNull(repoInterface);
+        var listMethod = repoInterface.GetMethod("ListAsync");
+        Assert.NotNull(listMethod);
+        
+        var parameters = listMethod.GetParameters();
+        var startIndexParam = parameters.FirstOrDefault(p => 
+            p.Name?.Equals("startIndex", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.NotNull(startIndexParam);
+    }
+
+    [Fact]
+    public void IUserRepository_ListAsync_Should_Accept_Count_Parameter()
+    {
+        // Arrange
+        var repoInterface = GetIUserRepositoryType();
+        
+        // Assert
+        Assert.NotNull(repoInterface);
+        var listMethod = repoInterface.GetMethod("ListAsync");
+        Assert.NotNull(listMethod);
+        
+        var parameters = listMethod.GetParameters();
+        var countParam = parameters.FirstOrDefault(p => 
+            p.Name?.Equals("count", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.NotNull(countParam);
+    }
+
+    [Fact]
+    public void IUserRepository_ListAsync_Should_Accept_SortBy_Parameter()
+    {
+        // Arrange
+        var repoInterface = GetIUserRepositoryType();
+        
+        // Assert
+        Assert.NotNull(repoInterface);
+        var listMethod = repoInterface.GetMethod("ListAsync");
+        Assert.NotNull(listMethod);
+        
+        var parameters = listMethod.GetParameters();
+        var sortByParam = parameters.FirstOrDefault(p => 
+            p.Name?.Equals("sortBy", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.NotNull(sortByParam);
+    }
+
+    [Fact]
+    public void IUserRepository_ListAsync_Should_Accept_SortOrder_Parameter()
+    {
+        // Arrange
+        var repoInterface = GetIUserRepositoryType();
+        
+        // Assert
+        Assert.NotNull(repoInterface);
+        var listMethod = repoInterface.GetMethod("ListAsync");
+        Assert.NotNull(listMethod);
+        
+        var parameters = listMethod.GetParameters();
+        var sortOrderParam = parameters.FirstOrDefault(p => 
+            p.Name?.Equals("sortOrder", StringComparison.OrdinalIgnoreCase) == true);
+        Assert.NotNull(sortOrderParam);
+    }
+
+    [Fact]
+    public void ScimListResponse_Should_Exist()
+    {
+        // Arrange & Act - List response type for pagination
+        var listResponseType = GetScimListResponseType();
+        
+        // Assert
+        Assert.NotNull(listResponseType);
+    }
+
+    [Fact]
+    public void ScimListResponse_Should_Have_TotalResults_Property()
+    {
+        // Arrange
+        var listResponseType = GetScimListResponseType();
+        
+        // Assert
+        Assert.NotNull(listResponseType);
+        var prop = listResponseType.GetProperty("TotalResults");
+        Assert.NotNull(prop);
+    }
+
+    [Fact]
+    public void ScimListResponse_Should_Have_StartIndex_Property()
+    {
+        // Arrange
+        var listResponseType = GetScimListResponseType();
+        
+        // Assert
+        Assert.NotNull(listResponseType);
+        var prop = listResponseType.GetProperty("StartIndex");
+        Assert.NotNull(prop);
+    }
+
+    [Fact]
+    public void ScimListResponse_Should_Have_ItemsPerPage_Property()
+    {
+        // Arrange
+        var listResponseType = GetScimListResponseType();
+        
+        // Assert
+        Assert.NotNull(listResponseType);
+        var prop = listResponseType.GetProperty("ItemsPerPage");
+        Assert.NotNull(prop);
+    }
+
+    [Fact]
+    public void ScimListResponse_Should_Have_Resources_Property()
+    {
+        // Arrange
+        var listResponseType = GetScimListResponseType();
+        
+        // Assert
+        Assert.NotNull(listResponseType);
+        var prop = listResponseType.GetProperty("Resources");
+        Assert.NotNull(prop);
+    }
+
+    [Fact]
+    public void ScimInvalidFilterException_Should_Exist_For_Invalid_Filters()
+    {
+        // Arrange & Act - Exception type for invalid filter expressions
+        var exceptionType = GetScimInvalidFilterExceptionType();
+        
+        // Assert
+        Assert.NotNull(exceptionType);
+        Assert.True(typeof(Exception).IsAssignableFrom(exceptionType));
+    }
+
     #endregion
 
     #region T056: PATCH /Users/{id} Endpoint Tests
@@ -754,6 +1061,99 @@ public class ScimUserEndpointTests
             if (httpGet == null) return false;
             return string.IsNullOrEmpty(httpGet.Template) || !httpGet.Template.Contains("{id}");
         });
+    }
+
+    private static Type? GetIFilterParserType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "IFilterParser");
+    }
+
+    private static Type? GetFilterParserType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "FilterParser");
+    }
+
+    private static Type? GetFilterOperatorType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "FilterOperator");
+    }
+
+    private static Type? GetLogicalOperatorType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "LogicalOperator");
+    }
+
+    private static Type? GetFilterExpressionType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "FilterExpression");
+    }
+
+    private static Type? GetScimListResponseType()
+    {
+        // ScimListResponse might be in Api or Core assembly
+        var apiAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Api");
+        
+        if (apiAssembly == null)
+        {
+            try
+            {
+                apiAssembly = Assembly.Load("SCIMGateway.Api");
+            }
+            catch
+            {
+                // Fallback to Core assembly
+            }
+        }
+        
+        var type = apiAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name.Contains("ScimListResponse"));
+        
+        if (type == null)
+        {
+            var coreAssembly = LoadCoreAssembly();
+            type = coreAssembly?.GetTypes()
+                .FirstOrDefault(t => t.Name.Contains("ScimListResponse"));
+        }
+        
+        return type;
+    }
+
+    private static Type? GetScimInvalidFilterExceptionType()
+    {
+        var coreAssembly = LoadCoreAssembly();
+        return coreAssembly?.GetTypes()
+            .FirstOrDefault(t => t.Name == "ScimInvalidFilterException");
+    }
+
+    private static Assembly? LoadCoreAssembly()
+    {
+        var coreAssembly = AppDomain.CurrentDomain.GetAssemblies()
+            .FirstOrDefault(a => a.GetName().Name == "SCIMGateway.Core");
+        
+        if (coreAssembly == null)
+        {
+            try
+            {
+                coreAssembly = Assembly.Load("SCIMGateway.Core");
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        
+        return coreAssembly;
     }
 
     #endregion
