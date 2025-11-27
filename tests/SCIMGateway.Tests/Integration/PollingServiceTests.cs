@@ -63,7 +63,7 @@ public class PollingServiceTests
 
     #region Polling Trigger Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Trigger_On_Schedule()
     {
         // Arrange
@@ -82,7 +82,7 @@ public class PollingServiceTests
         Assert.True(pollTriggered);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Call_Adapter_ListUsersAsync()
     {
         // Arrange
@@ -106,7 +106,7 @@ public class PollingServiceTests
         Assert.Equal(2, usersReturned.Count);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Call_Adapter_ListGroupsAsync()
     {
         // Arrange
@@ -134,7 +134,7 @@ public class PollingServiceTests
 
     #region Change Detection Integration Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Invoke_ChangeDetector_With_Current_State()
     {
         // Arrange
@@ -156,7 +156,7 @@ public class PollingServiceTests
         Assert.True(changeDetectorInvoked);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Detect_New_Users_Since_Last_Poll()
     {
         // Arrange - Previous poll had 2 users
@@ -180,7 +180,7 @@ public class PollingServiceTests
         Assert.Contains("user-003", newUsers);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Detect_Deleted_Users_Since_Last_Poll()
     {
         // Arrange - Previous poll had 3 users
@@ -204,7 +204,7 @@ public class PollingServiceTests
         Assert.Contains("user-003", deletedUsers);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Detect_Modified_Users_Since_Last_Poll()
     {
         // Arrange
@@ -236,7 +236,7 @@ public class PollingServiceTests
 
     #region Drift Report Generation Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Generate_Drift_Report()
     {
         // Arrange
@@ -263,7 +263,7 @@ public class PollingServiceTests
         Assert.Single(driftItems);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Include_All_Drift_Types_In_Report()
     {
         // Arrange - Simulate various drift types
@@ -287,7 +287,7 @@ public class PollingServiceTests
         Assert.Contains("MembershipMismatch", driftTypes);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Store_Drift_Report_In_SyncState()
     {
         // Arrange
@@ -314,7 +314,7 @@ public class PollingServiceTests
         Assert.NotEmpty(driftLog);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Update_Snapshot_After_Poll()
     {
         // Arrange
@@ -345,7 +345,7 @@ public class PollingServiceTests
 
     #region Sync State Management Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Load_Previous_State_Before_Comparing()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class PollingServiceTests
         Assert.Contains("users", lastKnownState);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Update_LastSyncTimestamp_After_Poll()
     {
         // Arrange
@@ -395,7 +395,7 @@ public class PollingServiceTests
         Assert.True(timestamp >= beforePoll);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Set_Status_To_InProgress_During_Poll()
     {
         // Arrange
@@ -419,7 +419,7 @@ public class PollingServiceTests
         Assert.Equal(inProgressValue, statusProp.GetValue(syncState));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Set_Status_To_Completed_After_Successful_Poll()
     {
         // Arrange
@@ -447,7 +447,7 @@ public class PollingServiceTests
 
     #region End-to-End Polling Flow Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_EndToEnd_Should_Complete_Full_Cycle()
     {
         // Arrange
@@ -471,7 +471,7 @@ public class PollingServiceTests
         Assert.Equal(11, workflowSteps.Count);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Handle_Empty_Provider_Response()
     {
         // Arrange - Provider returns no users (unexpected)
@@ -489,7 +489,7 @@ public class PollingServiceTests
         // Should log warning, possibly skip sync to avoid mass deletion
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Respect_Rate_Limits()
     {
         // Arrange
@@ -506,7 +506,7 @@ public class PollingServiceTests
         Assert.False(shouldPoll); // Only 3 minutes passed, need 5
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingService_Should_Poll_For_Specific_Tenant()
     {
         // Arrange

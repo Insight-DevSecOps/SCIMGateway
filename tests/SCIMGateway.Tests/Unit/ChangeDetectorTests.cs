@@ -61,7 +61,7 @@ public class ChangeDetectorTests
 
     #region T134 - User Change Detection
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_User_Added()
     {
         // Arrange
@@ -92,7 +92,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Added for user-001
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_User_Modified()
     {
         // Arrange
@@ -127,7 +127,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Modified for user-001
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_User_Deleted()
     {
         // Arrange
@@ -166,7 +166,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Deleted for user-002
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_User_Attribute_Changes()
     {
         // Arrange
@@ -196,7 +196,7 @@ public class ChangeDetectorTests
         // ChangeDetector should identify specific attribute that changed (emails)
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_User_Active_Status_Change()
     {
         // Arrange
@@ -226,7 +226,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report this as a significant change
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Handle_No_User_Changes()
     {
         // Arrange
@@ -264,7 +264,7 @@ public class ChangeDetectorTests
 
     #region T134 - Group Change Detection
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_Group_Added()
     {
         // Arrange
@@ -288,7 +288,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Added for group-001
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_Group_Modified()
     {
         // Arrange
@@ -315,7 +315,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Modified for group-001
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_Group_Deleted()
     {
         // Arrange
@@ -342,7 +342,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.Deleted for group-002
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_Group_Membership_Added()
     {
         // Arrange
@@ -371,7 +371,7 @@ public class ChangeDetectorTests
         // ChangeDetector should report DriftType.MembershipMismatch
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Detect_Group_Membership_Removed()
     {
         // Arrange
@@ -399,7 +399,7 @@ public class ChangeDetectorTests
         Assert.Contains("user-003", removedMembers);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ChangeDetector_Should_Handle_No_Group_Changes()
     {
         // Arrange
@@ -438,7 +438,7 @@ public class ChangeDetectorTests
 
     #region T135 - Drift Detection (Provider vs Entra State)
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Identify_User_Drift_When_Provider_Has_Different_Data()
     {
         // Arrange - Entra state
@@ -471,7 +471,7 @@ public class ChangeDetectorTests
         // - newValue: "Sales"
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Generate_Drift_Report_With_Old_And_New_Values()
     {
         // Arrange
@@ -498,7 +498,7 @@ public class ChangeDetectorTests
         Assert.Equal("Sales", newValueProp?.GetValue(driftReport)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Track_Timestamp_Of_Detection()
     {
         // Arrange
@@ -524,7 +524,7 @@ public class ChangeDetectorTests
         Assert.True(detectedAt <= afterDetection.AddSeconds(1));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Compare_State_Snapshots_Using_Checksum()
     {
         // Arrange
@@ -548,7 +548,7 @@ public class ChangeDetectorTests
         Assert.NotEqual(previousChecksum, currentChecksum);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Handle_Provider_User_Not_In_Entra()
     {
         // Arrange - Entra knows about these users
@@ -566,7 +566,7 @@ public class ChangeDetectorTests
         // This indicates user-003 was created directly in provider (drift)
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Handle_Entra_User_Not_In_Provider()
     {
         // Arrange - Entra knows about these users
@@ -584,7 +584,7 @@ public class ChangeDetectorTests
         // This indicates user-003 was deleted in provider (drift)
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Categorize_Drift_By_Type()
     {
         // Arrange
@@ -603,7 +603,7 @@ public class ChangeDetectorTests
         Assert.Contains("MembershipMismatch", driftTypes);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void DriftDetection_Should_Track_Reconciliation_Status()
     {
         // Arrange
@@ -642,7 +642,7 @@ public class ChangeDetectorTests
 
     #region T136 - Conflict Detection (Dual Modification)
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Detect_Dual_Modification()
     {
         // Arrange - Original state
@@ -682,7 +682,7 @@ public class ChangeDetectorTests
         // ConflictType should be DualModification
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Detect_Delete_Modify_Conflict()
     {
         // Arrange - Original state
@@ -714,7 +714,7 @@ public class ChangeDetectorTests
         // ConflictType should be DeleteModifyConflict
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Flag_For_Manual_Review()
     {
         // Arrange
@@ -744,7 +744,7 @@ public class ChangeDetectorTests
         Assert.False((bool?)resolvedProp?.GetValue(conflict));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Categorize_Conflict_Types()
     {
         // Arrange
@@ -762,7 +762,7 @@ public class ChangeDetectorTests
         Assert.Contains("TransformationConflict", conflictTypes);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Track_Both_Entra_And_Provider_Changes()
     {
         // Arrange
@@ -787,7 +787,7 @@ public class ChangeDetectorTests
         Assert.Equal("displayName: John Doe → Johnny Doe", providerChangeProp.GetValue(conflict)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Track_Resolution_Details()
     {
         // Arrange
@@ -816,7 +816,7 @@ public class ChangeDetectorTests
         Assert.Equal("Applied Entra value", resolutionProp?.GetValue(conflict)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Handle_No_Conflicts()
     {
         // Arrange - Only Entra changed (no conflict)
@@ -849,7 +849,7 @@ public class ChangeDetectorTests
         Assert.False(isConflict);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Handle_Multiple_Conflicts_Per_Sync()
     {
         // Arrange - Multiple resources with conflicts
@@ -869,7 +869,7 @@ public class ChangeDetectorTests
         Assert.Single(groupConflicts);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ConflictDetection_Should_Block_Auto_Sync_For_Conflicted_Resources()
     {
         // Arrange

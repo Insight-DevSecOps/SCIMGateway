@@ -59,7 +59,7 @@ public class DriftReconciliationTests
 
     #region Auto-Apply Reconciliation Flow Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task AutoApply_EntraToSaas_Should_Update_Provider_State()
     {
         // Arrange - Entra has different value than provider
@@ -93,7 +93,7 @@ public class DriftReconciliationTests
         Assert.Equal("Engineering", updatedValue);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task AutoApply_SaasToEntra_Should_Update_Entra_State()
     {
         // Arrange - Provider has different value than Entra
@@ -124,7 +124,7 @@ public class DriftReconciliationTests
         Assert.Equal("Sales", updatedValue);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task AutoApply_Should_Create_User_In_Target_System()
     {
         // Arrange - User exists in source but not target
@@ -152,7 +152,7 @@ public class DriftReconciliationTests
         Assert.Equal("user-new", createdUserId);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task AutoApply_Should_Delete_User_In_Target_System()
     {
         // Arrange - User deleted in source, still exists in target
@@ -179,7 +179,7 @@ public class DriftReconciliationTests
         Assert.Equal("user-deleted", deletedUserId);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task AutoApply_Should_Mark_Drift_As_Reconciled()
     {
         // Arrange
@@ -214,7 +214,7 @@ public class DriftReconciliationTests
 
     #region Manual Review Reconciliation Flow Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ManualReview_Should_Create_Conflict_Entry()
     {
         // Arrange - Dual modification detected
@@ -245,7 +245,7 @@ public class DriftReconciliationTests
         Assert.False((bool?)resolvedProp?.GetValue(conflict));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ManualReview_Should_Block_Resource_From_Sync()
     {
         // Arrange - Unresolved conflict
@@ -269,7 +269,7 @@ public class DriftReconciliationTests
         Assert.True(isBlocked);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ManualReview_Resolve_With_Entra_Value_Should_Update_Provider()
     {
         // Arrange
@@ -301,7 +301,7 @@ public class DriftReconciliationTests
         Assert.True(adapterUpdateCalled);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ManualReview_Resolve_With_Provider_Value_Should_Update_Entra()
     {
         // Arrange
@@ -331,7 +331,7 @@ public class DriftReconciliationTests
         Assert.True(graphApiUpdateCalled);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ManualReview_Should_Unblock_Resource_After_Resolution()
     {
         // Arrange
@@ -360,7 +360,7 @@ public class DriftReconciliationTests
 
     #region State Verification Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Update_SyncState_DriftLog()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class DriftReconciliationTests
         Assert.True((bool?)reconciledProp?.GetValue(driftEntry));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Update_SyncState_ConflictLog()
     {
         // Arrange
@@ -422,7 +422,7 @@ public class DriftReconciliationTests
         Assert.Single(conflictLogList);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Update_LastKnownState()
     {
         // Arrange
@@ -452,7 +452,7 @@ public class DriftReconciliationTests
         Assert.Contains("Product", storedState ?? "");
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Update_SnapshotChecksum()
     {
         // Arrange
@@ -481,7 +481,7 @@ public class DriftReconciliationTests
 
     #region Audit Logging Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Log_Operation_To_Audit()
     {
         // Arrange
@@ -508,7 +508,7 @@ public class DriftReconciliationTests
         Assert.Equal("user-001", resourceIdProp?.GetValue(auditLog)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Log_Strategy_Used()
     {
         // Arrange
@@ -528,7 +528,7 @@ public class DriftReconciliationTests
         Assert.Contains("AUTO_APPLY", operationTypeProp?.GetValue(auditLog)?.ToString() ?? "");
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Reconciliation_Should_Log_Direction_Enforced()
     {
         // Arrange
@@ -556,7 +556,7 @@ public class DriftReconciliationTests
 
     #region End-to-End Reconciliation Flow Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task EndToEnd_DetectDrift_ApplyAutoReconcile_VerifyState()
     {
         // Arrange - Complete workflow
@@ -611,7 +611,7 @@ public class DriftReconciliationTests
         Assert.Equal(7, workflowSteps.Count);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task EndToEnd_DetectConflict_RequireManualReview_ResolveAndApply()
     {
         // Arrange - Complete manual review workflow

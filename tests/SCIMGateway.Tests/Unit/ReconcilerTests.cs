@@ -58,7 +58,7 @@ public class ReconcilerTests
 
     #region T137 - AUTO_APPLY Strategy (Direction-Based)
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_EntraToSaas_Should_Overwrite_Provider_With_Entra_State()
     {
         // Arrange - Sync direction is ENTRA_TO_SAAS
@@ -88,7 +88,7 @@ public class ReconcilerTests
         // Reconciler should push Entra's "Engineering" to provider
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_SaasToEntra_Should_Overwrite_Entra_With_Provider_State()
     {
         // Arrange - Sync direction is SAAS_TO_ENTRA
@@ -118,7 +118,7 @@ public class ReconcilerTests
         // Reconciler should push provider's "Sales" to Entra
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Apply_User_Creation_Based_On_Direction()
     {
         // Arrange - User exists in provider but not Entra
@@ -141,7 +141,7 @@ public class ReconcilerTests
         Assert.True(shouldCreateInEntra);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Apply_User_Deletion_Based_On_Direction()
     {
         // Arrange - User deleted in Entra, still exists in provider
@@ -161,7 +161,7 @@ public class ReconcilerTests
         Assert.True(shouldDeleteInProvider);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Mark_Drift_As_Reconciled_After_Apply()
     {
         // Arrange
@@ -190,7 +190,7 @@ public class ReconcilerTests
         Assert.NotNull(reconciledAtProp?.GetValue(drift));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Handle_Group_Membership_Drift()
     {
         // Arrange - Group membership differs
@@ -220,7 +220,7 @@ public class ReconcilerTests
         Assert.Contains("user-003", membersToAdd);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Update_Sync_State_After_Reconciliation()
     {
         // Arrange
@@ -251,7 +251,7 @@ public class ReconcilerTests
         Assert.True(lastSync >= now.AddSeconds(-1));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void AutoApply_Should_Apply_Multiple_Changes_In_Batch()
     {
         // Arrange - Multiple users with drift
@@ -283,7 +283,7 @@ public class ReconcilerTests
 
     #region T138 - MANUAL_REVIEW Strategy
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Create_Conflict_Log_Entry()
     {
         // Arrange
@@ -311,7 +311,7 @@ public class ReconcilerTests
         Assert.False((bool?)resolvedProp?.GetValue(conflict));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Block_Auto_Sync_For_Conflicted_Resource()
     {
         // Arrange - Resource has unresolved conflict
@@ -337,7 +337,7 @@ public class ReconcilerTests
         Assert.Equal("user-001", resourceId);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Include_Both_Entra_And_Provider_Values()
     {
         // Arrange
@@ -364,7 +364,7 @@ public class ReconcilerTests
         Assert.Contains("Sales", providerValue ?? "");
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Allow_Admin_To_Resolve_With_Entra_Value()
     {
         // Arrange
@@ -392,7 +392,7 @@ public class ReconcilerTests
         Assert.Equal("APPLY_ENTRA", resolutionProp?.GetValue(conflict)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Allow_Admin_To_Resolve_With_Provider_Value()
     {
         // Arrange
@@ -416,7 +416,7 @@ public class ReconcilerTests
         Assert.Equal("APPLY_PROVIDER", resolutionProp?.GetValue(conflict)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Allow_Admin_To_Merge_Values()
     {
         // Arrange
@@ -438,7 +438,7 @@ public class ReconcilerTests
         Assert.Contains("CUSTOM:", resolutionProp?.GetValue(conflict)?.ToString() ?? "");
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Resume_Sync_After_Resolution()
     {
         // Arrange
@@ -462,7 +462,7 @@ public class ReconcilerTests
         Assert.True(shouldResumeSyncing);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Track_Resolution_Timestamp()
     {
         // Arrange
@@ -491,7 +491,7 @@ public class ReconcilerTests
         Assert.True(resolved > detected);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Log_Resolution_To_Audit_Trail()
     {
         // Arrange - Simulate audit log entry for conflict resolution
@@ -513,7 +513,7 @@ public class ReconcilerTests
         Assert.Equal("user-001", resourceIdProp?.GetValue(auditLog)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Support_Ignore_Resolution()
     {
         // Arrange
@@ -536,7 +536,7 @@ public class ReconcilerTests
         // Resource should resume syncing but keep both values as-is
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void ManualReview_Should_Handle_Multiple_Pending_Conflicts()
     {
         // Arrange - Multiple conflicts pending review
@@ -561,7 +561,7 @@ public class ReconcilerTests
 
     #region Strategy Selection
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void Reconciler_Should_Use_AutoApply_When_No_Conflict()
     {
         // Arrange - Simple drift (no dual modification)
@@ -576,7 +576,7 @@ public class ReconcilerTests
         Assert.Equal("AUTO_APPLY", strategyToUse);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void Reconciler_Should_Use_ManualReview_When_Conflict_Detected()
     {
         // Arrange - Conflict detected
@@ -591,7 +591,7 @@ public class ReconcilerTests
         Assert.Equal("MANUAL_REVIEW", strategyToUse);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void Reconciler_Should_Support_Ignore_Strategy()
     {
         // Arrange
@@ -607,7 +607,7 @@ public class ReconcilerTests
         Assert.True(shouldLog);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public void Reconciler_Should_Default_To_ManualReview_For_DeleteModify_Conflict()
     {
         // Arrange - Delete/Modify conflict is high-risk

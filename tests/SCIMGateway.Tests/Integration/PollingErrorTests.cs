@@ -59,7 +59,7 @@ public class PollingErrorTests
 
     #region Adapter Unavailable Scenarios
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_Adapter_Connection_Timeout()
     {
         // Arrange
@@ -86,7 +86,7 @@ public class PollingErrorTests
         Assert.True(retryAttempted);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_Adapter_Authentication_Failure()
     {
         // Arrange
@@ -107,7 +107,7 @@ public class PollingErrorTests
         Assert.True(alertSent);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_Adapter_Rate_Limited()
     {
         // Arrange - 429 Too Many Requests
@@ -128,7 +128,7 @@ public class PollingErrorTests
         Assert.Equal(60, retryAfterSeconds);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_Adapter_ServerError()
     {
         // Arrange - 500 Internal Server Error
@@ -149,7 +149,7 @@ public class PollingErrorTests
         Assert.True(shouldRetry);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_Network_Unreachable()
     {
         // Arrange
@@ -171,7 +171,7 @@ public class PollingErrorTests
         Assert.True(shouldRetry);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PollingError_Should_Handle_DNS_Resolution_Failure()
     {
         // Arrange
@@ -193,7 +193,7 @@ public class PollingErrorTests
 
     #region Retry Logic Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Retry_On_Transient_Error()
     {
         // Arrange
@@ -217,7 +217,7 @@ public class PollingErrorTests
         Assert.Equal(3, currentRetry);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Fail_After_Max_Retries()
     {
         // Arrange
@@ -245,7 +245,7 @@ public class PollingErrorTests
         Assert.Equal(3, currentRetry);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Use_Exponential_Backoff()
     {
         // Arrange
@@ -271,7 +271,7 @@ public class PollingErrorTests
         Assert.Equal(16000, delays[4]); // 16 seconds
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Add_Jitter_To_Avoid_Thundering_Herd()
     {
         // Arrange
@@ -293,7 +293,7 @@ public class PollingErrorTests
         Assert.True(delays.Distinct().Count() > 1); // Should have variation
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Not_Retry_Non_Transient_Errors()
     {
         // Arrange
@@ -318,7 +318,7 @@ public class PollingErrorTests
         Assert.False(retryAttempted);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task RetryLogic_Should_Respect_Retry_After_Header()
     {
         // Arrange
@@ -340,7 +340,7 @@ public class PollingErrorTests
 
     #region Error Logging Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ErrorLogging_Should_Log_To_SyncState_ErrorLog()
     {
         // Arrange
@@ -376,7 +376,7 @@ public class PollingErrorTests
         Assert.True((bool?)isTransientProp?.GetValue(errorEntry));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ErrorLogging_Should_Log_To_Application_Insights()
     {
         // Arrange
@@ -401,7 +401,7 @@ public class PollingErrorTests
         Assert.Equal("ADAPTER_UNAVAILABLE", errorCodeProp?.GetValue(auditLog)?.ToString());
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ErrorLogging_Should_Track_Retry_Count()
     {
         // Arrange
@@ -425,7 +425,7 @@ public class PollingErrorTests
         Assert.Equal(3, (int?)retryCountProp.GetValue(errorEntry));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ErrorLogging_Should_Include_Stack_Trace()
     {
         // Arrange
@@ -454,7 +454,7 @@ public class PollingErrorTests
         Assert.Contains("PollingErrorTests", stackTrace);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task ErrorLogging_Should_Identify_Affected_Resource()
     {
         // Arrange
@@ -484,7 +484,7 @@ public class PollingErrorTests
 
     #region Operations Team Alert Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Trigger_After_Max_Retries_Exhausted()
     {
         // Arrange
@@ -503,7 +503,7 @@ public class PollingErrorTests
         Assert.True(alertTriggered);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Trigger_For_Critical_Errors()
     {
         // Arrange
@@ -522,7 +522,7 @@ public class PollingErrorTests
         Assert.True(alertTriggered);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Include_Error_Details()
     {
         // Arrange
@@ -547,7 +547,7 @@ public class PollingErrorTests
         Assert.Equal(3, (int)alertMessage["retryCount"]);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Include_Recommended_Action()
     {
         // Arrange
@@ -569,7 +569,7 @@ public class PollingErrorTests
         Assert.Contains("OAuth", recommendedAction);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Not_Spam_For_Same_Error()
     {
         // Arrange
@@ -596,7 +596,7 @@ public class PollingErrorTests
         Assert.Equal(2, alertsSent.Count);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Alert_Should_Suppress_During_Cooldown()
     {
         // Arrange
@@ -617,7 +617,7 @@ public class PollingErrorTests
 
     #region Sync State Management During Errors
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Error_Should_Set_SyncStatus_To_Failed()
     {
         // Arrange
@@ -641,7 +641,7 @@ public class PollingErrorTests
         Assert.Equal(failedValue, statusProp.GetValue(syncState));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task PartialError_Should_Set_SyncStatus_To_CompletedWithErrors()
     {
         // Arrange
@@ -665,7 +665,7 @@ public class PollingErrorTests
         Assert.Equal(completedWithErrorsValue, statusProp.GetValue(syncState));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Error_Should_Not_Update_LastSyncTimestamp()
     {
         // Arrange
@@ -695,7 +695,7 @@ public class PollingErrorTests
         Assert.Equal(previousSyncTime, currentTimestamp);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Error_Should_Preserve_Previous_Snapshot()
     {
         // Arrange
@@ -728,7 +728,7 @@ public class PollingErrorTests
 
     #region Error Recovery Tests
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Recovery_Should_Resume_From_Last_Good_State()
     {
         // Arrange
@@ -750,7 +750,7 @@ public class PollingErrorTests
         Assert.Equal(25, (int)recoveredState["groupCount"]);
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Recovery_Should_Clear_Error_Status_On_Success()
     {
         // Arrange
@@ -778,7 +778,7 @@ public class PollingErrorTests
         Assert.Equal(completedValue, statusProp.GetValue(syncState));
     }
 
-    [Fact(Skip = "Pending implementation of T118-T133")]
+    [Fact]
     public async Task Recovery_Should_Log_Successful_Recovery()
     {
         // Arrange
