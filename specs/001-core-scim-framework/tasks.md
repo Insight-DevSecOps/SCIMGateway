@@ -301,11 +301,11 @@ Additional tests created for T067-T071:
 - [x] T126 [US4] Implement reconciliation strategy AUTO_APPLY in src/SyncEngine/Reconciler.cs (if direction=ENTRA_TO_SAAS, overwrite provider with Entra state; if direction=SAAS_TO_ENTRA, overwrite Entra with provider state) ✅
 - [x] T127 [US4] Implement reconciliation strategy MANUAL_REVIEW in src/SyncEngine/Reconciler.cs (create conflict log entry, notify operations team, block auto-sync for conflicted resource, expose POST /api/drift/{driftId}/reconcile endpoint for admin approval with selected direction) ✅
 - [x] T128 [US4] Implement reconciliation strategy IGNORE in src/SyncEngine/Reconciler.cs (log drift as informational, do not apply changes) ✅
-- [ ] T129 [US4] Implement PollingService in src/SyncEngine/PollingService.cs (scheduled polling via timer trigger or cron job, call adapter ListUsersAsync/ListGroupsAsync, invoke ChangeDetector)
-- [ ] T130 [US4] Implement sync state snapshot in src/SyncEngine/SyncState.cs (capture snapshotChecksum, snapshotTimestamp, userCount, groupCount after each sync)
-- [ ] T131 [US4] Implement error handling for polling failures in src/SyncEngine/PollingService.cs (log adapter unavailable, retry per configured policy, alert operations team)
-- [ ] T132 [US4] Add drift report API endpoint GET /api/drift in src/Core/Endpoints/DriftEndpoint.cs (query drift reports by tenantId/providerId/reconciled status, return drift details)
-- [ ] T133 [US4] Add conflict report API endpoint GET /api/conflicts in src/Core/Endpoints/DriftEndpoint.cs (query conflicts by tenantId/providerId/resolved status, return conflict details with suggested remediation)
+- [x] T129 [US4] Implement PollingService in src/SyncEngine/PollingService.cs (scheduled polling via timer trigger or cron job, call adapter ListUsersAsync/ListGroupsAsync, invoke ChangeDetector) ✅
+- [x] T130 [US4] Implement sync state snapshot in src/SyncEngine/SyncState.cs (capture snapshotChecksum, snapshotTimestamp, userCount, groupCount after each sync) ✅
+- [x] T131 [US4] Implement error handling for polling failures in src/SyncEngine/PollingService.cs (log adapter unavailable, retry per configured policy, alert operations team) ✅
+- [x] T132 [US4] Add drift report API endpoint GET /api/drift in src/Core/Endpoints/DriftEndpoint.cs (query drift reports by tenantId/providerId/reconciled status, return drift details) ✅
+- [x] T133 [US4] Add conflict report API endpoint GET /api/conflicts in src/Core/Endpoints/DriftEndpoint.cs (query conflicts by tenantId/providerId/resolved status, return conflict details with suggested remediation) ✅
 
 ### Tests for User Story 4
 
