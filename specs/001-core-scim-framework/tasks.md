@@ -16,9 +16,9 @@
 | Phase 3: SCIM Endpoints | ✅ Complete | 32/32 | 936 passing |
 | Phase 4: Adapter Pattern | ✅ Complete | 14/14 | 1,042 passing |
 | Phase 5: Transformation Engine | ✅ Tests Complete | 20/20 impl, 12/12 tests | 169 tests created |
-| Phase 6: Change Detection | 🟡 In Progress | 2/16 impl, 8/8 tests | 120 tests created |
+| Phase 6: Change Detection | 🟡 In Progress | 6/16 impl, 8/8 tests | 120 tests created |
 
-**Latest Commit**: T118-T119 - DriftReport and ConflictReport models
+**Latest Commit**: T120-T123 - SyncState storage and ChangeDetector implementation
 **Test Status**: 1,042 tests passing, 289 skipped (Phases 5-6 implementation pending)
 
 ## Format: `- [ ] [ID] [P?] [Story?] Description with file path`
@@ -292,10 +292,10 @@ Additional tests created for T067-T071:
 
 - [x] T118 [P] [US4] Create DriftReport model in src/SyncEngine/DriftReport.cs (driftId, timestamp, driftType, resourceType, resourceId, details, reconciled) ✅
 - [x] T119 [P] [US4] Create ConflictReport model in src/SyncEngine/ConflictReport.cs (conflictId, timestamp, conflictType, resourceType, resourceId, entraChange, providerChange, resolution, resolved) ✅
-- [ ] T120 [P] [US4] Implement SyncState storage in src/SyncEngine/SyncState.cs (create/update/query sync state in Cosmos DB sync-state container per contracts/cosmos-db-schema.md)
-- [ ] T121 [US4] Implement ChangeDetector in src/SyncEngine/ChangeDetector.cs (compare current provider state with lastKnownState from Cosmos DB, detect added/modified/deleted users and groups)
-- [ ] T122 [US4] Implement drift detection logic in src/SyncEngine/ChangeDetector.cs (identify drift: provider state differs from Entra state, generate drift report with old vs new values)
-- [ ] T123 [US4] Implement conflict detection in src/SyncEngine/ChangeDetector.cs (detect dual modification: same resource changed in both Entra and provider, flag for manual review)
+- [x] T120 [P] [US4] Implement SyncState storage in src/SyncEngine/SyncStateRepository.cs (create/update/query sync state in Cosmos DB sync-state container per contracts/cosmos-db-schema.md) ✅
+- [x] T121 [US4] Implement ChangeDetector in src/SyncEngine/ChangeDetector.cs (compare current provider state with lastKnownState from Cosmos DB, detect added/modified/deleted users and groups) ✅
+- [x] T122 [US4] Implement drift detection logic in src/SyncEngine/ChangeDetector.cs (identify drift: provider state differs from Entra state, generate drift report with old vs new values) ✅
+- [x] T123 [US4] Implement conflict detection in src/SyncEngine/ChangeDetector.cs (detect dual modification: same resource changed in both Entra and provider, flag for manual review) ✅
 - [ ] T124 [US4] Implement drift logging in src/Core/AuditLogger.cs (log all drift detections to Application Insights, capture resource ID, old value, new value, timestamp)
 - [ ] T125 [US4] Implement Reconciler in src/SyncEngine/Reconciler.cs (reconciliation strategies: auto-apply based on sync direction, manual review, ignore)
 - [ ] T126 [US4] Implement reconciliation strategy AUTO_APPLY in src/SyncEngine/Reconciler.cs (if direction=ENTRA_TO_SAAS, overwrite provider with Entra state; if direction=SAAS_TO_ENTRA, overwrite Entra with provider state)
