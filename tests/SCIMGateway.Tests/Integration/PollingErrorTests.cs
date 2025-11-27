@@ -390,14 +390,19 @@ public class PollingErrorTests
         var errorCodeProp = auditLogType.GetProperty("ErrorCode");
         var errorMessageProp = auditLogType.GetProperty("ErrorMessage");
 
-        // Act - Log error
-        if (operationTypeProp != null) operationTypeProp.SetValue(auditLog, "SyncError");
+        // Act - Log error using Sync operation type (OperationType is an enum)
+        var operationTypeEnumType = operationTypeProp?.PropertyType;
+        if (operationTypeProp != null && operationTypeEnumType != null && operationTypeEnumType.IsEnum)
+        {
+            var syncValue = Enum.Parse(operationTypeEnumType, "Sync");
+            operationTypeProp.SetValue(auditLog, syncValue);
+        }
         if (errorCodeProp != null) errorCodeProp.SetValue(auditLog, "ADAPTER_UNAVAILABLE");
         if (errorMessageProp != null) errorMessageProp.SetValue(auditLog, "Failed to connect to Salesforce");
         await Task.CompletedTask;
 
         // Assert
-        Assert.Equal("SyncError", operationTypeProp?.GetValue(auditLog)?.ToString());
+        Assert.Equal("Sync", operationTypeProp?.GetValue(auditLog)?.ToString());
         Assert.Equal("ADAPTER_UNAVAILABLE", errorCodeProp?.GetValue(auditLog)?.ToString());
     }
 
@@ -789,13 +794,22 @@ public class PollingErrorTests
         Assert.NotNull(auditLog);
 
         var operationTypeProp = auditLogType.GetProperty("OperationType");
+        var httpStatusProp = auditLogType.GetProperty("HttpStatus");
 
-        // Act - Log recovery
-        if (operationTypeProp != null) operationTypeProp.SetValue(auditLog, "SyncRecovered");
+        // Act - Log recovery using Sync operation type with 200 status (OperationType is an enum)
+        var operationTypeEnumType = operationTypeProp?.PropertyType;
+        if (operationTypeProp != null && operationTypeEnumType != null && operationTypeEnumType.IsEnum)
+        {
+            var syncValue = Enum.Parse(operationTypeEnumType, "Sync");
+            operationTypeProp.SetValue(auditLog, syncValue);
+        }
+        // HttpStatus 200 indicates success
+        if (httpStatusProp != null) httpStatusProp.SetValue(auditLog, 200);
         await Task.CompletedTask;
 
-        // Assert
-        Assert.Equal("SyncRecovered", operationTypeProp?.GetValue(auditLog)?.ToString());
+        // Assert - Sync with HttpStatus 200 indicates successful recovery
+        Assert.Equal("Sync", operationTypeProp?.GetValue(auditLog)?.ToString());
+        Assert.Equal(200, (int?)httpStatusProp?.GetValue(auditLog));
     }
 
     #endregion

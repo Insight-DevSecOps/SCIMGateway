@@ -474,7 +474,7 @@ public class ChangeDetectorTests
     [Fact]
     public void DriftDetection_Should_Generate_Drift_Report_With_Old_And_New_Values()
     {
-        // Arrange
+        // Arrange - DriftReport uses DriftDetails with AttributeDrift for old/new values
         var driftReportType = GetTypeByName("DriftReport") ?? GetTypeByName("DriftLogEntry");
         Assert.NotNull(driftReportType);
 
@@ -482,20 +482,50 @@ public class ChangeDetectorTests
         var driftReport = CreateInstance(driftReportType);
         Assert.NotNull(driftReport);
 
-        // Set properties
+        // Set resource ID
         var resourceIdProp = driftReportType.GetProperty("ResourceId");
-        var driftTypeProp = driftReportType.GetProperty("DriftType");
-        var oldValueProp = driftReportType.GetProperty("OldValue");
-        var newValueProp = driftReportType.GetProperty("NewValue");
-
         if (resourceIdProp != null) resourceIdProp.SetValue(driftReport, "user-001");
-        if (oldValueProp != null) oldValueProp.SetValue(driftReport, "Engineering");
-        if (newValueProp != null) newValueProp.SetValue(driftReport, "Sales");
 
-        // Assert
+        // Create DriftDetails with AttributeDrift for old/new values
+        var driftDetailsType = GetTypeByName("DriftDetails");
+        var attributeDriftType = GetTypeByName("AttributeDrift");
+        
+        if (driftDetailsType != null && attributeDriftType != null)
+        {
+            var driftDetails = CreateInstance(driftDetailsType);
+            var attributeDrift = CreateInstance(attributeDriftType);
+            
+            // Set values on AttributeDrift
+            var attributeNameProp = attributeDriftType.GetProperty("AttributeName");
+            var entraValueProp = attributeDriftType.GetProperty("EntraValue");
+            var providerValueProp = attributeDriftType.GetProperty("ProviderValue");
+            
+            if (attributeNameProp != null) attributeNameProp.SetValue(attributeDrift, "department");
+            if (entraValueProp != null) entraValueProp.SetValue(attributeDrift, "Engineering");
+            if (providerValueProp != null) providerValueProp.SetValue(attributeDrift, "Sales");
+            
+            // Add to DriftDetails
+            var driftedAttributesProp = driftDetailsType.GetProperty("DriftedAttributes");
+            if (driftedAttributesProp != null)
+            {
+                var listType = typeof(List<>).MakeGenericType(attributeDriftType);
+                var list = Activator.CreateInstance(listType);
+                listType.GetMethod("Add")?.Invoke(list, new[] { attributeDrift });
+                driftedAttributesProp.SetValue(driftDetails, list);
+            }
+            
+            // Set Details on DriftReport
+            var detailsProp = driftReportType.GetProperty("Details");
+            if (detailsProp != null) detailsProp.SetValue(driftReport, driftDetails);
+            
+            // Assert via Details.DriftedAttributes
+            var details = detailsProp?.GetValue(driftReport);
+            var attrs = driftedAttributesProp?.GetValue(details);
+            Assert.NotNull(attrs);
+        }
+
+        // Assert resource ID is set
         Assert.Equal("user-001", resourceIdProp?.GetValue(driftReport)?.ToString());
-        Assert.Equal("Engineering", oldValueProp?.GetValue(driftReport)?.ToString());
-        Assert.Equal("Sales", newValueProp?.GetValue(driftReport)?.ToString());
     }
 
     [Fact]

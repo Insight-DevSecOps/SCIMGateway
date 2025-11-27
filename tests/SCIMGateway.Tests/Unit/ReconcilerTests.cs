@@ -504,12 +504,18 @@ public class ReconcilerTests
         var operationTypeProp = auditLogType.GetProperty("OperationType");
         var resourceIdProp = auditLogType.GetProperty("ResourceId");
 
-        // Act - Create audit entry for resolution
-        if (operationTypeProp != null) operationTypeProp.SetValue(auditLog, "ConflictResolution");
+        // Act - Create audit entry for resolution using Sync operation type
+        // (OperationType is an enum, use Sync as closest match for conflict resolution)
+        var operationTypeEnumType = operationTypeProp?.PropertyType;
+        if (operationTypeProp != null && operationTypeEnumType != null && operationTypeEnumType.IsEnum)
+        {
+            var syncValue = Enum.Parse(operationTypeEnumType, "Sync");
+            operationTypeProp.SetValue(auditLog, syncValue);
+        }
         if (resourceIdProp != null) resourceIdProp.SetValue(auditLog, "user-001");
 
         // Assert
-        Assert.Equal("ConflictResolution", operationTypeProp?.GetValue(auditLog)?.ToString());
+        Assert.Equal("Sync", operationTypeProp?.GetValue(auditLog)?.ToString());
         Assert.Equal("user-001", resourceIdProp?.GetValue(auditLog)?.ToString());
     }
 

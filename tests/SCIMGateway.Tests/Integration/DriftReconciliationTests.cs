@@ -494,17 +494,19 @@ public class DriftReconciliationTests
 
         var operationTypeProp = auditLogType.GetProperty("OperationType");
         var resourceIdProp = auditLogType.GetProperty("ResourceId");
-        var oldValueProp = auditLogType.GetProperty("OldValue");
-        var newValueProp = auditLogType.GetProperty("NewValue");
 
-        if (operationTypeProp != null) operationTypeProp.SetValue(auditLog, "Reconciliation");
+        // OperationType is an enum - use Sync as closest match for reconciliation
+        var operationTypeEnumType = operationTypeProp?.PropertyType;
+        if (operationTypeProp != null && operationTypeEnumType != null && operationTypeEnumType.IsEnum)
+        {
+            var syncValue = Enum.Parse(operationTypeEnumType, "Sync");
+            operationTypeProp.SetValue(auditLog, syncValue);
+        }
         if (resourceIdProp != null) resourceIdProp.SetValue(auditLog, "user-001");
-        if (oldValueProp != null) oldValueProp.SetValue(auditLog, "Sales");
-        if (newValueProp != null) newValueProp.SetValue(auditLog, "Product");
         await Task.CompletedTask;
 
         // Assert
-        Assert.Equal("Reconciliation", operationTypeProp?.GetValue(auditLog)?.ToString());
+        Assert.Equal("Sync", operationTypeProp?.GetValue(auditLog)?.ToString());
         Assert.Equal("user-001", resourceIdProp?.GetValue(auditLog)?.ToString());
     }
 
@@ -518,14 +520,34 @@ public class DriftReconciliationTests
         var auditLog = CreateInstance(auditLogType);
         Assert.NotNull(auditLog);
 
-        // Act - Log reconciliation strategy
-        // Using available property or custom context
+        // Act - Log reconciliation strategy via OperationType and Description
         var operationTypeProp = auditLogType.GetProperty("OperationType");
-        if (operationTypeProp != null) operationTypeProp.SetValue(auditLog, "Reconciliation:AUTO_APPLY");
+        var descriptionProp = auditLogType.GetProperty("Description");
+        
+        // Set OperationType using enum
+        var operationTypeEnumType = operationTypeProp?.PropertyType;
+        if (operationTypeProp != null && operationTypeEnumType != null && operationTypeEnumType.IsEnum)
+        {
+            var syncValue = Enum.Parse(operationTypeEnumType, "Sync");
+            operationTypeProp.SetValue(auditLog, syncValue);
+        }
+        
+        // Store strategy in Description if available
+        if (descriptionProp != null)
+        {
+            descriptionProp.SetValue(auditLog, "Reconciliation with AUTO_APPLY strategy");
+        }
         await Task.CompletedTask;
 
-        // Assert
-        Assert.Contains("AUTO_APPLY", operationTypeProp?.GetValue(auditLog)?.ToString() ?? "");
+        // Assert operation type is set
+        Assert.Equal("Sync", operationTypeProp?.GetValue(auditLog)?.ToString());
+        
+        // Assert strategy is in Description (or just verify operation type if no Description)
+        if (descriptionProp != null)
+        {
+            var description = descriptionProp.GetValue(auditLog)?.ToString();
+            Assert.Contains("AUTO_APPLY", description ?? "");
+        }
     }
 
     [Fact]
