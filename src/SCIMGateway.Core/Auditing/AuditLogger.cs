@@ -279,6 +279,106 @@ public interface IAuditLogger
         string entitlementType,
         IEnumerable<string> matchedGroups,
         string actorId);
+
+    // ==================== Drift Detection Operations (T124) ====================
+
+    /// <summary>
+    /// Logs a drift detection event.
+    /// T124: Drift detection logging to Application Insights.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="driftId">Unique identifier for the drift.</param>
+    /// <param name="driftType">Type of drift detected.</param>
+    /// <param name="resourceType">Type of resource (User/Group).</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="oldValue">Previous value (before drift).</param>
+    /// <param name="newValue">New value (after drift).</param>
+    /// <param name="severity">Drift severity level.</param>
+    /// <param name="actorId">Actor identifier (usually system for polling).</param>
+    Task LogDriftDetectionAsync(
+        string tenantId,
+        string providerId,
+        string driftId,
+        string driftType,
+        string resourceType,
+        string resourceId,
+        string? oldValue,
+        string? newValue,
+        string severity,
+        string actorId);
+
+    /// <summary>
+    /// Logs a drift reconciliation event.
+    /// T124: Drift reconciliation logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="driftId">Unique identifier for the drift.</param>
+    /// <param name="resourceType">Type of resource (User/Group).</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="reconciliationAction">Action taken to reconcile.</param>
+    /// <param name="success">Whether reconciliation succeeded.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="errorMessage">Error message if failed.</param>
+    Task LogDriftReconciliationAsync(
+        string tenantId,
+        string providerId,
+        string driftId,
+        string resourceType,
+        string resourceId,
+        string reconciliationAction,
+        bool success,
+        string actorId,
+        string? errorMessage = null);
+
+    /// <summary>
+    /// Logs a conflict detection event.
+    /// T124: Conflict detection logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="conflictId">Unique identifier for the conflict.</param>
+    /// <param name="conflictType">Type of conflict detected.</param>
+    /// <param name="resourceType">Type of resource (User/Group).</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="entraChange">Description of Entra change.</param>
+    /// <param name="providerChange">Description of provider change.</param>
+    /// <param name="severity">Conflict severity level.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    Task LogConflictDetectionAsync(
+        string tenantId,
+        string providerId,
+        string conflictId,
+        string conflictType,
+        string resourceType,
+        string resourceId,
+        string? entraChange,
+        string? providerChange,
+        string severity,
+        string actorId);
+
+    /// <summary>
+    /// Logs a conflict resolution event.
+    /// T124: Conflict resolution logging.
+    /// </summary>
+    /// <param name="tenantId">Tenant identifier.</param>
+    /// <param name="providerId">Provider identifier.</param>
+    /// <param name="conflictId">Unique identifier for the conflict.</param>
+    /// <param name="resourceType">Type of resource (User/Group).</param>
+    /// <param name="resourceId">Resource identifier.</param>
+    /// <param name="resolution">Resolution applied.</param>
+    /// <param name="actorId">Actor identifier.</param>
+    /// <param name="notes">Resolution notes.</param>
+    Task LogConflictResolutionAsync(
+        string tenantId,
+        string providerId,
+        string conflictId,
+        string resourceType,
+        string resourceId,
+        string resolution,
+        string actorId,
+        string? notes = null);
 }
 
 /// <summary>
@@ -395,6 +495,12 @@ public class AuditEventNames
     public string TransformationFailed { get; set; } = "SCIM_TransformationFailed";
     public string TransformationConflict { get; set; } = "SCIM_TransformationConflict";
     public string ReverseTransformation { get; set; } = "SCIM_ReverseTransformation";
+
+    // T124: Additional drift detection event names
+    public string DriftReconciled { get; set; } = "SCIM_DriftReconciled";
+    public string DriftReconciliationFailed { get; set; } = "SCIM_DriftReconciliationFailed";
+    public string ConflictResolved { get; set; } = "SCIM_ConflictResolved";
+    public string SyncBlocked { get; set; } = "SCIM_SyncBlocked";
 }
 
 /// <summary>
@@ -923,6 +1029,231 @@ public class AuditLogger : IAuditLogger
         _logger.LogInformation(
             "Reverse transformation: Entitlement {EntitlementId} ({EntitlementType}) from provider {ProviderId} mapped to {MatchCount} groups [{Groups}]",
             entitlementId, entitlementType, providerId, matchedGroups.Count(), string.Join(", ", matchedGroups));
+
+        await LogAsync(entry);
+    }
+
+    // ==================== Drift Detection Operations (T124) ====================
+
+    /// <inheritdoc />
+    public async Task LogDriftDetectionAsync(
+        string tenantId,
+        string providerId,
+        string driftId,
+        string driftType,
+        string resourceType,
+        string resourceId,
+        string? oldValue,
+        string? newValue,
+        string severity,
+        string actorId)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Sync,
+            ResourceType = resourceType,
+            ResourceId = resourceId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 200,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["driftId"] = driftId,
+                ["driftType"] = driftType,
+                ["severity"] = severity,
+                ["eventType"] = "DriftDetected"
+            }
+        };
+
+        // Add PII-redacted old/new values if configured
+        if (_options.LogRequestBodies)
+        {
+            if (!string.IsNullOrEmpty(oldValue))
+                entry.OldValue = RedactAndTruncate(oldValue);
+            if (!string.IsNullOrEmpty(newValue))
+                entry.NewValue = RedactAndTruncate(newValue);
+        }
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent(_options.EventNames.DriftDetected, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["driftId"] = driftId,
+            ["driftType"] = driftType,
+            ["resourceType"] = resourceType,
+            ["resourceId"] = resourceId,
+            ["severity"] = severity
+        });
+
+        _logger.LogWarning(
+            "Drift detected: {DriftType} on {ResourceType}/{ResourceId} for provider {ProviderId}, severity={Severity}, driftId={DriftId}",
+            driftType, resourceType, resourceId, providerId, severity, driftId);
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogDriftReconciliationAsync(
+        string tenantId,
+        string providerId,
+        string driftId,
+        string resourceType,
+        string resourceId,
+        string reconciliationAction,
+        bool success,
+        string actorId,
+        string? errorMessage = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Sync,
+            ResourceType = resourceType,
+            ResourceId = resourceId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = success ? 200 : 500,
+            ErrorMessage = errorMessage,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["driftId"] = driftId,
+                ["reconciliationAction"] = reconciliationAction,
+                ["success"] = success.ToString(),
+                ["eventType"] = "DriftReconciliation"
+            }
+        };
+
+        // Log to Application Insights
+        var eventName = success ? _options.EventNames.DriftReconciled : _options.EventNames.DriftReconciliationFailed;
+        _telemetryClient?.TrackEvent(eventName, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["driftId"] = driftId,
+            ["resourceType"] = resourceType,
+            ["resourceId"] = resourceId,
+            ["reconciliationAction"] = reconciliationAction,
+            ["success"] = success.ToString()
+        });
+
+        if (success)
+        {
+            _logger.LogInformation(
+                "Drift reconciled: {ResourceType}/{ResourceId} via {Action} for provider {ProviderId}, driftId={DriftId}",
+                resourceType, resourceId, reconciliationAction, providerId, driftId);
+        }
+        else
+        {
+            _logger.LogError(
+                "Drift reconciliation failed: {ResourceType}/{ResourceId} via {Action} for provider {ProviderId}, driftId={DriftId}: {Error}",
+                resourceType, resourceId, reconciliationAction, providerId, driftId, errorMessage);
+        }
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogConflictDetectionAsync(
+        string tenantId,
+        string providerId,
+        string conflictId,
+        string conflictType,
+        string resourceType,
+        string resourceId,
+        string? entraChange,
+        string? providerChange,
+        string severity,
+        string actorId)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Sync,
+            ResourceType = resourceType,
+            ResourceId = resourceId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 409, // Conflict status
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["conflictId"] = conflictId,
+                ["conflictType"] = conflictType,
+                ["severity"] = severity,
+                ["entraChange"] = entraChange ?? "N/A",
+                ["providerChange"] = providerChange ?? "N/A",
+                ["eventType"] = "ConflictDetected"
+            }
+        };
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent(_options.EventNames.ConflictDetected, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["conflictId"] = conflictId,
+            ["conflictType"] = conflictType,
+            ["resourceType"] = resourceType,
+            ["resourceId"] = resourceId,
+            ["severity"] = severity
+        });
+
+        _logger.LogWarning(
+            "Conflict detected: {ConflictType} on {ResourceType}/{ResourceId} for provider {ProviderId}, severity={Severity}, conflictId={ConflictId}. Entra: {EntraChange}, Provider: {ProviderChange}",
+            conflictType, resourceType, resourceId, providerId, severity, conflictId, entraChange ?? "N/A", providerChange ?? "N/A");
+
+        await LogAsync(entry);
+    }
+
+    /// <inheritdoc />
+    public async Task LogConflictResolutionAsync(
+        string tenantId,
+        string providerId,
+        string conflictId,
+        string resourceType,
+        string resourceId,
+        string resolution,
+        string actorId,
+        string? notes = null)
+    {
+        var entry = new AuditLogEntry
+        {
+            OperationType = OperationType.Update,
+            ResourceType = resourceType,
+            ResourceId = resourceId,
+            TenantId = tenantId,
+            ActorId = actorId,
+            AdapterId = providerId,
+            HttpStatus = 200,
+            Metadata = new Dictionary<string, string>
+            {
+                ["providerId"] = providerId,
+                ["conflictId"] = conflictId,
+                ["resolution"] = resolution,
+                ["notes"] = notes ?? string.Empty,
+                ["eventType"] = "ConflictResolution"
+            }
+        };
+
+        // Log to Application Insights
+        _telemetryClient?.TrackEvent(_options.EventNames.ConflictResolved, new Dictionary<string, string>
+        {
+            ["tenantId"] = tenantId,
+            ["providerId"] = providerId,
+            ["conflictId"] = conflictId,
+            ["resourceType"] = resourceType,
+            ["resourceId"] = resourceId,
+            ["resolution"] = resolution,
+            ["resolvedBy"] = actorId
+        });
+
+        _logger.LogInformation(
+            "Conflict resolved: {ResourceType}/{ResourceId} via {Resolution} for provider {ProviderId}, conflictId={ConflictId}, resolvedBy={ActorId}",
+            resourceType, resourceId, resolution, providerId, conflictId, actorId);
 
         await LogAsync(entry);
     }
