@@ -16,9 +16,9 @@
 | Phase 3: SCIM Endpoints | ✅ Complete | 32/32 | 936 passing |
 | Phase 4: Adapter Pattern | ✅ Complete | 14/14 | 1,042 passing |
 | Phase 5: Transformation Engine | ✅ Tests Complete | 20/20 impl, 12/12 tests | 169 tests created |
-| Phase 6: Change Detection | 🟡 Tests Complete | 0/16 impl, 8/8 tests | 120 tests created |
+| Phase 6: Change Detection | 🟡 In Progress | 2/16 impl, 8/8 tests | 120 tests created |
 
-**Latest Commit**: T134-T141 - Phase 6 tests for change detection, drift, reconciliation
+**Latest Commit**: T118-T119 - DriftReport and ConflictReport models
 **Test Status**: 1,042 tests passing, 289 skipped (Phases 5-6 implementation pending)
 
 ## Format: `- [ ] [ID] [P?] [Story?] Description with file path`
@@ -290,8 +290,8 @@ Additional tests created for T067-T071:
 
 ### Implementation for User Story 4
 
-- [ ] T118 [P] [US4] Create DriftReport model in src/SyncEngine/DriftReport.cs (driftId, timestamp, driftType, resourceType, resourceId, details, reconciled)
-- [ ] T119 [P] [US4] Create ConflictReport model in src/SyncEngine/ConflictReport.cs (conflictId, timestamp, conflictType, resourceType, resourceId, entraChange, providerChange, resolution, resolved)
+- [x] T118 [P] [US4] Create DriftReport model in src/SyncEngine/DriftReport.cs (driftId, timestamp, driftType, resourceType, resourceId, details, reconciled) ✅
+- [x] T119 [P] [US4] Create ConflictReport model in src/SyncEngine/ConflictReport.cs (conflictId, timestamp, conflictType, resourceType, resourceId, entraChange, providerChange, resolution, resolved) ✅
 - [ ] T120 [P] [US4] Implement SyncState storage in src/SyncEngine/SyncState.cs (create/update/query sync state in Cosmos DB sync-state container per contracts/cosmos-db-schema.md)
 - [ ] T121 [US4] Implement ChangeDetector in src/SyncEngine/ChangeDetector.cs (compare current provider state with lastKnownState from Cosmos DB, detect added/modified/deleted users and groups)
 - [ ] T122 [US4] Implement drift detection logic in src/SyncEngine/ChangeDetector.cs (identify drift: provider state differs from Entra state, generate drift report with old vs new values)
